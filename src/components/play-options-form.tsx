@@ -1,0 +1,145 @@
+import { Action, ActionPanel, Form, Icon, useNavigation } from "@raycast/api";
+import { useCachedPromise } from "@raycast/utils";
+import { useState } from "react";
+import type { Speaker, Voice } from "@quak/js";
+import { quak } from "../lib/quak";
+import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
+
+// The empty choice of a dropdown: send nothing, the workspace's default applies
+const DEFAULT = "default";
+
+type Values = { to: string[]; volume: string; voice?: string; effect: string; ambience: string };
+
+const SPEAKER_ICONS: Record<Speaker["type"], Icon> = {
+  WORKSPACE: Icon.House,
+  LOCATION: Icon.House,
+  PLAYER: Icon.Speaker,
+  GROUP: Icon.TwoPeople,
+};
+
+// Voices grouped by language, in the order of the API
+function byLanguage(voices: Voice[]) {
+  const groups = new Map<string, Voice[]>();
+  for (const voice of voices) {
+    groups.set(voice.languageName, [...(groups.get(voice.languageName) ?? []), voice]);
+  }
+  return [...groups.entries()];
+}
+
+function parseVolume(raw: string): number | undefined | null {
+  const value = raw.trim();
+  if (!value) return undefined;
+  const volume = Number(value);
+  return Number.isInteger(volume) && volume >= 1 && volume <= 100 ? volume : null;
+}
+
+// Speakers, volume, voice (text only), voice effect and ambience; each field remembers its last value
+export function PlayOptionsForm({ source }: { source: PlaySource }) {
+  const { pop } = useNavigation();
+  const [volumeError, setVolumeError] = useState<string>();
+  const isText = source.kind === "text";
+
+  const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, []);
+  const effects = useCachedPromise(async () => (await quak().effects.list()).data, []);
+  const voices = useCachedPromise(async () => (await quak().voices.list()).data, [], { execute: isText });
+
+  async function submit(values: Values) {
+    const volume = parseVolume(values.volume);
+    if (volume === null) {
+      setVolumeError("1 to 100, or empty");
+      return;
+    }
+    const pick = (value: string | undefined) => (value && value !== DEFAULT ? value : undefined);
+    const options: PlayOptions = {
+      to: values.to,
+      volume,
+      voice: pick(values.voice),
+      effect: pick(values.effect),
+      ambience: pick(values.ambience),
+    };
+    // Say closes Raycast like a plain Enter, sounds and clips go back to their list
+    const played = await playWithFeedback(source, options, isText ? "hud" : "toast");
+    if (played && !isText) pop();
+  }
+
+  const title = isText ? "Say" : source.kind === "sound" ? "Play Sound" : "Play Clip";
+  const effectList = effects.data?.filter((effect) => effect.kind === "effect");
+  const ambienceList = effects.data?.filter((effect) => effect.kind === "ambience");
+
+  return (
+    <Form
+      navigationTitle="Play with Options"
+      isLoading={speakers.isLoading || effects.isLoading || (isText && voices.isLoading)}
+      actions={
+        <ActionPanel>
+          <Action.SubmitForm title={title} icon={Icon.Play} onSubmit={submit} />
+        </ActionPanel>
+      }
+    >
+      <Form.Description
+        title={isText ? "Text" : source.kind === "sound" ? "Sound" : "Clip"}
+        text={isText ? source.text : source.name}
+      />
+      {/* rendered once the choices are there, so the stored values find their items */}
+      {speakers.data && (
+        <Form.TagPicker id="to" title="Speakers" info="Empty: the workspace's default speakers" storeValue>
+          {speakers.data.map((speaker) => (
+            <Form.TagPicker.Item
+              key={speaker.slug}
+              value={speaker.slug}
+              title={speaker.name}
+              icon={SPEAKER_ICONS[speaker.type]}
+            />
+          ))}
+        </Form.TagPicker>
+      )}
+      <Form.TextField
+        id="volume"
+        title="Volume"
+        placeholder="Workspace default"
+        info="1 to 100, empty: the workspace's default volume"
+        error={volumeError}
+        onChange={() => setVolumeError(undefined)}
+        storeValue
+      />
+      {isText && voices.data && (
+        <Form.Dropdown id="voice" title="Voice" filtering storeValue>
+          <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
+          {byLanguage(voices.data).map(([language, list]) => (
+            <Form.Dropdown.Section key={language} title={language}>
+              {list.map((voice) => (
+                <Form.Dropdown.Item
+                  key={voice.slug}
+                  value={voice.slug}
+                  title={`${voice.name} (${voice.locale}, ${voice.gender})`}
+                  keywords={[voice.slug, voice.language, voice.languageName, voice.provider.toLowerCase()]}
+                />
+              ))}
+            </Form.Dropdown.Section>
+          ))}
+        </Form.Dropdown>
+      )}
+      {effectList && (
+        <Form.Dropdown id="effect" title="Voice Effect" storeValue>
+          <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
+          <Form.Dropdown.Item value="none" title="None" />
+          {effectList.map((effect) => (
+            <Form.Dropdown.Item key={effect.id} value={effect.id} title={effect.name} keywords={[effect.id]} />
+          ))}
+        </Form.Dropdown>
+      )}
+      {ambienceList && (
+        <Form.Dropdown id="ambience" title="Ambience" storeValue>
+          <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
+          <Form.Dropdown.Item value="none" title="None" />
+          {ambienceList.map((ambience) => (
+            <Form.Dropdown.Item key={ambience.id} value={ambience.id} title={ambience.name} keywords={[ambience.id]} />
+          ))}
+        </Form.Dropdown>
+      )}
+      {!isText && (
+        <Form.Description text="A voice effect or ambience processes the audio on the server: 2 credits instead of 1, and the workspace's intro and outro apply too." />
+      )}
+    </Form>
+  );
+}
