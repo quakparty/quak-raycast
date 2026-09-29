@@ -1,5 +1,5 @@
 import { showToast, Toast } from "@raycast/api";
-import { showFailureToast } from "@raycast/utils";
+import { showError } from "./errors";
 import { quak } from "./quak";
 
 // Stops what plays on every speaker of the workspace ("all"), also clips of other apps
@@ -17,6 +17,6 @@ export async function stopAllWithToast() {
     toast.style = Toast.Style.Success;
   } catch (error) {
     await toast.hide();
-    await showFailureToast(error, { title: "Could not stop" });
+    await showError(error, "Could not stop");
   }
 }

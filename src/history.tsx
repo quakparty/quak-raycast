@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Color, Icon, Keyboard, List, showToast, Toast } from "@raycast/api";
-import { showFailureToast, useCachedPromise } from "@raycast/utils";
+import { showError } from "./lib/errors";
+import { useCachedPromise } from "@raycast/utils";
 import { unwrap, type Play } from "@quak/js";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
@@ -88,7 +89,7 @@ export default function Command() {
         return { data, hasMore: meta.offset + meta.count < meta.total };
       },
     [],
-    { keepPreviousData: true },
+    { keepPreviousData: true, onError: (error) => showError(error, "Could not load the history") },
   );
 
   function content(play: Play) {
@@ -145,7 +146,7 @@ export default function Command() {
       plays.revalidate();
     } catch (error) {
       await toast.hide();
-      await showFailureToast(error, { title: "Could not stop" });
+      await showError(error, "Could not stop");
     }
   }
 

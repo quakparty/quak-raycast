@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Form, Icon, showToast, Toast, useNavigation } from "@raycast/api";
-import { showFailureToast } from "@raycast/utils";
+import { showError } from "../lib/errors";
 import { unwrap } from "@quak/js";
 import { quak } from "../lib/quak";
 
@@ -20,7 +20,7 @@ export function SaveClipForm({ playId, onSaved }: { playId: string; onSaved?: ()
       pop();
     } catch (error) {
       await toast.hide();
-      await showFailureToast(error, { title: "Could not save the clip" });
+      await showError(error, "Could not save the clip");
     }
   }
 

@@ -64,7 +64,8 @@
     {
       "name": "apiKey",
       "title": "API Key",
-      "description": "A key with scope play, from Settings → API Keys on quak.party.",
+      "description": "Create a key with scope play at quak.party/app/settings/keys",
+      "placeholder": "qk_key_… from quak.party/app/settings/keys",
       "type": "password",
       "required": true
     }

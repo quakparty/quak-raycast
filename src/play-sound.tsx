@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
@@ -19,7 +20,7 @@ export default function Command() {
     async (q: string, tag: string) =>
       (await quak().sounds.list({ q: q.trim() || undefined, tags: tag === ALL_TAGS ? undefined : tag })).data,
     [search, tag],
-    { keepPreviousData: true },
+    { keepPreviousData: true, onError: (error) => showError(error, "Could not load sounds") },
   );
   const tagNames = new Map(tags.data?.map((item) => [item.tag, item.name]));
 

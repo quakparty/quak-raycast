@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { StopAction } from "./components/stop-action";
@@ -8,7 +9,9 @@ import { quak } from "./lib/quak";
 
 // The workspace's clips; the API has no search for them, so Raycast filters by name and slug
 export default function Command() {
-  const clips = useCachedPromise(async () => (await quak().clips.list()).data, []);
+  const clips = useCachedPromise(async () => (await quak().clips.list()).data, [], {
+    onError: (error) => showError(error, "Could not load clips"),
+  });
 
   return (
     <List isLoading={clips.isLoading} searchBarPlaceholder="Search clips">

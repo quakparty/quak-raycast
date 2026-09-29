@@ -17,7 +17,7 @@ choices. Errors from Quak (no credits, speaker offline etc.) show as a toast, pl
 
 ## Setup
 
-Create an API key with scope `play` on quak.party (Settings → API Keys) and paste it into the extension's
+Create an API key with scope `play` at [quak.party/app/settings/keys](https://quak.party/app/settings/keys) and paste it into the extension's
 preferences.
 
 ## Development

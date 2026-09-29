@@ -1,5 +1,5 @@
 import { showHUD, showToast, Toast } from "@raycast/api";
-import { showFailureToast } from "@raycast/utils";
+import { showError } from "./errors";
 import type { Play, PlayTextParams } from "@quak/js";
 import { quak } from "./quak";
 
@@ -93,7 +93,7 @@ export async function withFeedback(request: () => Promise<Play>, feedback: Feedb
     return play;
   } catch (error) {
     await toast?.hide();
-    await showFailureToast(error, { title: "Could not play" });
+    await showError(error, "Could not play");
     return null;
   }
 }
