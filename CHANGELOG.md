@@ -2,4 +2,7 @@
 
 ## [Initial Version] - {PR_MERGE_DATE}
 
-- Say a text and stop playback on your Sonos speakers.
+- Say a text with the workspace's defaults or with options (speakers, volume, voice, voice effect, ambience).
+- Play sounds from the library and the workspace's clips.
+- Stop everything on all speakers.
+- History of recent plays with replay, stop, save as clip and copy text.
