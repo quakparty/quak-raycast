@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Color, Icon, Keyboard, List, showToast, Toast } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
+import { useEffect } from "react";
 import { unwrap, type Play } from "@quak/js";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
@@ -57,6 +58,8 @@ function param(play: Play, key: string): string | undefined {
 
 const isLive = (play: Play) => play.type === "TALK" && play.params.live === true;
 const isProcessed = (play: Play) => play.params.process !== false;
+const POLL_MS = 2000;
+
 const isRunning = (play: Play) => ["SCHEDULED", "PENDING", "ACTIVE"].includes(play.status);
 const hasText = (play: Play) =>
   play.type === "TEXT" && play.params.textExpired !== true && Boolean(param(play, "text"));
@@ -97,6 +100,14 @@ export default function Command() {
     [],
     { keepPreviousData: true, onError: (error) => showError(error, "Could not load the history") },
   );
+
+  // while a play starts or plays, reload every 2 s until it is done (the API has no push for this list)
+  const busy = plays.data?.some((play) => play.status === "PENDING" || play.status === "ACTIVE") ?? false;
+  useEffect(() => {
+    if (!busy || plays.isLoading) return;
+    const timer = setTimeout(() => plays.revalidate(), POLL_MS);
+    return () => clearTimeout(timer);
+  }, [busy, plays.isLoading, plays.data]);
 
   function content(play: Play) {
     switch (play.type) {
