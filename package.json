@@ -5,7 +5,7 @@
   "title": "Quak for Sonos",
   "description": "Play announcements, sounds and clips on your Sonos speakers.",
   "icon": "icon.png",
-  "author": "TODO",
+  "author": "mlieser",
   "license": "MIT",
   "platforms": ["macOS", "Windows"],
   "categories": ["Media", "Productivity"],
