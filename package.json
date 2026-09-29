@@ -7,16 +7,29 @@
   "icon": "icon.png",
   "author": "mlieser",
   "license": "MIT",
-  "platforms": ["macOS", "Windows"],
-  "categories": ["Media", "Productivity"],
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "categories": [
+    "Media",
+    "Productivity"
+  ],
   "commands": [
     {
       "name": "say",
       "title": "Say",
       "subtitle": "Quak",
       "description": "Say a text on your speakers.",
-      "mode": "no-view",
-      "arguments": [{ "name": "text", "placeholder": "Text", "type": "text", "required": true }]
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "text",
+          "placeholder": "Text",
+          "type": "text",
+          "required": false
+        }
+      ]
     },
     {
       "name": "stop",
