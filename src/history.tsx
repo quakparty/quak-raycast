@@ -71,14 +71,20 @@ function typeName(play: Play) {
   return isLive(play) ? "Talk Live" : TYPE_NAMES[play.type];
 }
 
+// A name from a slug lookup, only own entries (no "constructor" and the like)
+function nameOf(names: Record<string, string> | undefined, slug: string) {
+  return names && Object.hasOwn(names, slug) ? names[slug] : undefined;
+}
+
 // Recent plays of the workspace with their details
 export default function Command() {
-  // the history names sounds and clips by slug, the lists give their names
+  // the history names sounds and clips by slug, the lists give their names; plain objects, because the cache stores
+  // JSON and a Map would come back empty
   const names = useCachedPromise(async () => {
     const [sounds, clips] = await Promise.all([quak().sounds.list({ limit: 500 }), quak().clips.list()]);
     return {
-      sounds: new Map(sounds.data.map((sound) => [sound.slug, sound.name])),
-      clips: new Map(clips.data.map((clip) => [clip.slug, clip.name])),
+      sounds: Object.fromEntries(sounds.data.map((sound) => [sound.slug, sound.name])),
+      clips: Object.fromEntries(clips.data.map((clip) => [clip.slug, clip.name])),
     };
   }, []);
 
@@ -98,11 +104,11 @@ export default function Command() {
         return param(play, "text") ?? "Text";
       case "SOUND": {
         const slug = param(play, "sound") ?? "";
-        return names.data?.sounds.get(slug) ?? (slug || "Sound");
+        return nameOf(names.data?.sounds, slug) ?? (slug || "Sound");
       }
       case "CLIP": {
         const slug = param(play, "clip") ?? "";
-        return names.data?.clips.get(slug) ?? (slug || "Clip");
+        return nameOf(names.data?.clips, slug) ?? (slug || "Clip");
       }
       case "TALK": {
         const seconds = Number(play.params.speechSeconds);
