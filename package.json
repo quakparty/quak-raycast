@@ -51,6 +51,13 @@
       "subtitle": "Quak",
       "description": "Stop everything that plays on your speakers.",
       "mode": "no-view"
+    },
+    {
+      "name": "history",
+      "title": "History",
+      "subtitle": "Quak",
+      "description": "Browse recent plays, replay them, stop them or save them as clips.",
+      "mode": "view"
     }
   ],
   "preferences": [
