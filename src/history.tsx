@@ -30,24 +30,28 @@ const TYPE_ICONS: Record<Play["type"], Icon> = {
   URL: Icon.Link,
 };
 
-const STATUS: Record<Play["status"], { name: string; color: Color }> = {
+// Raycast's yellow and orange are too light on the light theme; darker there, the usual ones on dark
+const YELLOW: Color.Dynamic = { light: "#8A5A00", dark: "#FFC531", adjustContrast: true };
+const ORANGE: Color.Dynamic = { light: "#B34700", dark: "#FF8A3D", adjustContrast: true };
+
+const STATUS: Record<Play["status"], { name: string; color: Color.ColorLike }> = {
   SCHEDULED: { name: "Scheduled", color: Color.Purple },
   PENDING: { name: "Starting", color: Color.Blue },
   ACTIVE: { name: "Playing", color: Color.Green },
-  PARTIALLY_DONE: { name: "Partly Done", color: Color.Orange },
+  PARTIALLY_DONE: { name: "Partly Done", color: ORANGE },
   DONE: { name: "Done", color: Color.SecondaryText },
-  STOPPED: { name: "Stopped", color: Color.Orange },
+  STOPPED: { name: "Stopped", color: ORANGE },
   FAILED: { name: "Failed", color: Color.Red },
-  SKIPPED: { name: "Skipped", color: Color.Yellow },
+  SKIPPED: { name: "Skipped", color: YELLOW },
 };
 
-const PLAYER_STATUS: Record<Play["players"][number]["status"], Color> = {
+const PLAYER_STATUS: Record<Play["players"][number]["status"], Color.ColorLike> = {
   PENDING: Color.Blue,
   ACTIVE: Color.Green,
   DONE: Color.SecondaryText,
-  STOPPED: Color.Orange,
+  STOPPED: ORANGE,
   FAILED: Color.Red,
-  SKIPPED: Color.Yellow,
+  SKIPPED: YELLOW,
 };
 
 const SKIP_REASONS: Record<string, string> = { QUIET_HOURS: "Quiet hours", BUSY: "Speakers busy" };
