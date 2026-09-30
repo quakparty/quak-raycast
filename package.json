@@ -3,7 +3,7 @@
   "name": "quak",
   "version": "0.9.0",
   "title": "Quak for Sonos",
-  "description": "Play announcements, sounds and clips on your Sonos speakers.",
+  "description": "Play announcements, sounds and clips on your Sonos speakers with Quak (quak.party).",
   "icon": "icon.png",
   "author": "mlieser",
   "license": "MIT",
