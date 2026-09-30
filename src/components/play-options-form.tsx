@@ -165,11 +165,8 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
           ))}
         </Form.Dropdown>
       )}
-      {source.kind === "talk" && (
-        <Form.Description text="Talk costs 2 credits plus 1 per started 10 s of speech, silence at the start and end is cut." />
-      )}
       {(source.kind === "sound" || source.kind === "clip") && (
-        <Form.Description text="A voice effect or ambience processes the audio on the server: 2 credits instead of 1, and the workspace's intro and outro apply too." />
+        <Form.Description text="With a voice effect or ambience, the workspace's intro and outro apply too." />
       )}
     </Form>
   );

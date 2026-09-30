@@ -30,7 +30,7 @@ function toParams(source: PlaySource, options: PlayOptions): Common & { voice?: 
   if (options.effect) params.effect = options.effect as Common["effect"];
   if (options.ambience) params.ambience = options.ambience as Common["ambience"];
   if (source.kind === "sound" || source.kind === "clip") {
-    // "none" alone needs no processing (and would cost the extra credit)
+    // "none" alone needs no processing (and would cost more)
     const active = [params.effect, params.ambience].some((value) => value && value !== "none");
     if (active) {
       params.process = true;

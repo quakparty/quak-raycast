@@ -240,7 +240,6 @@ export default function Command() {
             {play.length !== null && (
               <List.Item.Detail.Metadata.Label title="Length" text={formatSeconds(play.length)} />
             )}
-            <List.Item.Detail.Metadata.Label title="Credits" text={String(play.credits)} />
             {play.params.replayOf !== undefined && <List.Item.Detail.Metadata.Label title="Replay" text="Yes" />}
           </List.Item.Detail.Metadata>
         }

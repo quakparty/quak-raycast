@@ -157,7 +157,6 @@ function markdown(phase: Phase, elapsed: number, left: number, error?: { title: 
         `# ● ${formatClock(elapsed)}`,
         "Speak now. " + keys,
         left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(MAX_SECONDS)}.`,
-        "Costs 2 credits plus 1 per started 10 s of speech.",
       ].join("\n\n");
     case "recorded":
       return [`# ${formatClock(elapsed)}`, "Recorded. " + keys].join("\n\n");

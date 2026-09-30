@@ -34,7 +34,7 @@ export function SaveClipForm({ playId, onSaved }: { playId: string; onSaved?: ()
       }
     >
       <Form.TextField id="name" title="Name" placeholder="Automatic" autoFocus />
-      <Form.Description text="Saves the audio as it played, with intro, outro and effects. Costs 2 credits." />
+      <Form.Description text="Saves the audio as it played, with intro, outro and effects." />
     </Form>
   );
 }
