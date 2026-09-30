@@ -2,6 +2,7 @@ import { Action, ActionPanel, Form, Icon, useNavigation } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import type { Speaker, Voice } from "@quak/js";
+import { showError } from "../lib/errors";
 import { quak } from "../lib/quak";
 import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
 
@@ -39,9 +40,16 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
   const [volumeError, setVolumeError] = useState<string>();
   const isText = source.kind === "text";
 
-  const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, []);
-  const effects = useCachedPromise(async () => (await quak().effects.list()).data, []);
-  const voices = useCachedPromise(async () => (await quak().voices.list()).data, [], { execute: isText });
+  const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, [], {
+    onError: (error) => showError(error, "Could not load the speakers"),
+  });
+  const effects = useCachedPromise(async () => (await quak().effects.list()).data, [], {
+    onError: (error) => showError(error, "Could not load the effects"),
+  });
+  const voices = useCachedPromise(async () => (await quak().voices.list()).data, [], {
+    execute: isText,
+    onError: (error) => showError(error, "Could not load the voices"),
+  });
 
   async function submit(values: Values) {
     const volume = parseVolume(values.volume);
