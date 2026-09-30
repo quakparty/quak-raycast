@@ -8,6 +8,7 @@ import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-
 import { formatSeconds } from "./lib/format";
 import { withFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
+import { useLivePlays } from "./lib/watch";
 
 const PAGE_SIZE = 30;
 
@@ -108,13 +109,21 @@ export default function Command() {
     { keepPreviousData: true, onError: (error) => showError(error, "Could not load the history") },
   );
 
-  // while a play starts or plays, reload every 2 s until it is done (the API has no push for this list)
-  const busy = plays.data?.some((play) => play.status === "PENDING" || play.status === "ACTIVE") ?? false;
+  // changes arrive live over the API's WebSocket; while it is down, reload every 2 s as long as a play is running
+  const live = useLivePlays();
+  const listed = new Set(plays.data?.map((play) => play.id));
+  const shown = [
+    ...Object.values(live.plays)
+      .filter((play) => !listed.has(play.id))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    ...(plays.data?.map((play) => live.plays[play.id] ?? play) ?? []),
+  ];
+  const busy = shown.some((play) => play.status === "PENDING" || play.status === "ACTIVE");
   useEffect(() => {
-    if (!busy || plays.isLoading) return;
+    if (live.connected || !busy || plays.isLoading) return;
     const timer = setTimeout(() => plays.revalidate(), POLL_MS);
     return () => clearTimeout(timer);
-  }, [busy, plays.isLoading, plays.data]);
+  }, [live.connected, busy, plays.isLoading, plays.data]);
 
   function content(play: Play) {
     switch (play.type) {
@@ -241,7 +250,7 @@ export default function Command() {
 
   return (
     <List isLoading={plays.isLoading} isShowingDetail pagination={plays.pagination} searchBarPlaceholder="Filter plays">
-      {plays.data?.map((play) => (
+      {shown.map((play) => (
         <List.Item
           key={play.id}
           icon={{ source: TYPE_ICONS[play.type], tooltip: typeName(play) }}
