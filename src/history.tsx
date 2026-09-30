@@ -62,20 +62,16 @@ function param(play: Play, key: string): string | undefined {
 }
 
 const isLive = (play: Play) => play.type === "TALK" && play.params.live === true;
-const isProcessed = (play: Play) => play.params.process !== false;
 const POLL_MS = 2000;
 
 const isRunning = (play: Play) => ["SCHEDULED", "PENDING", "ACTIVE"].includes(play.status);
 const hasText = (play: Play) =>
   play.type === "TEXT" && play.params.textExpired !== true && Boolean(param(play, "text"));
 
-// A text's audio is gone once its text is (textExpired), then neither replay nor save works
-const audioGone = (play: Play) => play.type === "TEXT" && play.params.textExpired === true;
-// Replay: not for talk live (not recorded) and unprocessed URLs (not stored), see docs/plays.md#replay
-const canReplay = (play: Play) => !isLive(play) && !(play.type === "URL" && !isProcessed(play)) && !audioGone(play);
-// Save: only audio the server made, so sounds, clips and URLs only when processed
-const canSave = (play: Play) =>
-  !isLive(play) && !audioGone(play) && (["TEXT", "TALK", "FILE"].includes(play.type) || play.params.process === true);
+// Replay and save come from the API (canReplay, canSave): it knows whether the audio still exists
+type Abilities = { canReplay?: boolean; canSave?: boolean };
+const canReplay = (play: Play) => (play as Play & Abilities).canReplay === true;
+const canSave = (play: Play) => (play as Play & Abilities).canSave === true;
 
 function typeName(play: Play) {
   return isLive(play) ? "Talk Live" : TYPE_NAMES[play.type];
