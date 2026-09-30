@@ -13,8 +13,9 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
   macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
   Security → Microphone. On Windows the command only says that it needs macOS.
-- **Play Sound**: search the sound library by name, description or tag and play a sound.
-- **Play Clip**: play one of your workspace's clips.
+- **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Quicklink` (⌘⇧L)
+  saves a quicklink that plays this sound right away with your workspace's defaults; give it an alias or a hotkey.
+- **Play Clip**: play one of your workspace's clips. `Create Quicklink` (⌘⇧L) works like in Play Sound.
 - **Stop Playback**: stop everything that plays on all speakers of your workspace.
 - **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
   runs, save it as a clip or copy its text.

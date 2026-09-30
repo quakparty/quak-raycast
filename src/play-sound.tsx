@@ -1,8 +1,9 @@
-import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, LaunchProps, List } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
@@ -11,7 +12,8 @@ import { quak } from "./lib/quak";
 const ALL_TAGS = "all";
 
 // The sound library, searched by the API (name, description, search words), filtered by tag
-export default function Command() {
+export default function Command(props: LaunchProps) {
+  const isPlaying = useQuicklinkPlay("sound", props);
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
@@ -29,7 +31,7 @@ export default function Command() {
 
   return (
     <List
-      isLoading={sounds.isLoading}
+      isLoading={sounds.isLoading || isPlaying}
       onSearchTextChange={setSearch}
       throttle
       searchBarPlaceholder="Search sounds"
@@ -58,6 +60,7 @@ export default function Command() {
               <ActionPanel>
                 <Action title="Play Sound" icon={Icon.Play} onAction={() => playWithFeedback(source, {}, "toast")} />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
+                <CreateQuicklinkAction kind="sound" slug={sound.slug} name={sound.name} />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={sound.slug} />
               </ActionPanel>
