@@ -82,7 +82,7 @@ export function describePlay(play: Play): { title: string; message?: string; ski
   return { title, message, skipped: false };
 }
 
-// "hud" closes Raycast (Say, Talk), "toast" keeps the list open for the next one
+// "hud" closes Raycast (Play Text, Talk to Speakers), "toast" keeps the list open for the next one
 export type Feedback = "hud" | "toast";
 
 // Runs a play request with feedback: the API's message on errors, where it plays or why it was skipped on success.

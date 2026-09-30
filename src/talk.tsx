@@ -128,7 +128,7 @@ function Talk() {
 
   return (
     <Detail
-      navigationTitle="Talk"
+      navigationTitle="Talk to Speakers"
       isLoading={phase === "starting" || phase === "sending"}
       markdown={markdown(phase, elapsed, left, error)}
       actions={

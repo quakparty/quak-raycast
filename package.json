@@ -17,10 +17,17 @@
   ],
   "commands": [
     {
-      "name": "say",
-      "title": "Say",
+      "name": "play-text",
+      "title": "Play Text",
       "subtitle": "Quak",
       "description": "Say a text on your speakers.",
+      "keywords": [
+        "say",
+        "speak",
+        "tts",
+        "text to speech",
+        "announce"
+      ],
       "mode": "view",
       "arguments": [
         {
@@ -33,16 +40,19 @@
     },
     {
       "name": "talk",
-      "title": "Talk",
+      "title": "Talk to Speakers",
       "subtitle": "Quak",
       "description": "Record from the microphone and play it on your speakers (macOS only).",
-      "mode": "view",
       "keywords": [
-        "microphone",
-        "speak",
+        "talk",
         "record",
+        "voice",
+        "microphone",
+        "mic",
+        "speak",
         "announce"
-      ]
+      ],
+      "mode": "view"
     },
     {
       "name": "play-sound",
@@ -60,16 +70,26 @@
     },
     {
       "name": "stop",
-      "title": "Stop",
+      "title": "Stop Playback",
       "subtitle": "Quak",
       "description": "Stop everything that plays on your speakers.",
+      "keywords": [
+        "stop",
+        "silence",
+        "quiet"
+      ],
       "mode": "no-view"
     },
     {
       "name": "history",
-      "title": "History",
+      "title": "Play History",
       "subtitle": "Quak",
       "description": "Browse recent plays, replay them, stop them or save them as clips.",
+      "keywords": [
+        "history",
+        "recent",
+        "replay"
+      ],
       "mode": "view"
     }
   ],

@@ -36,8 +36,8 @@ function parseVolume(raw: string): number | undefined | null {
 }
 
 const TITLES: Record<PlaySource["kind"], string> = {
-  text: "Say",
-  talk: "Talk",
+  text: "Play Text",
+  talk: "Talk to Speakers",
   sound: "Play Sound",
   clip: "Play Clip",
 };
@@ -60,7 +60,7 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
   const { pop } = useNavigation();
   const [volumeError, setVolumeError] = useState<string>();
   const isText = source.kind === "text";
-  // Say and Talk close Raycast like a plain Enter, sounds and clips go back to their list
+  // Play Text and Talk to Speakers close Raycast like a plain Enter, sounds and clips go back to their list
   const closes = source.kind === "text" || source.kind === "talk";
 
   const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, [], {

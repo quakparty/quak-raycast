@@ -4,17 +4,17 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
 
 ## Commands
 
-- **Say**: type a text and press Enter to say it with your workspace's defaults. `Play with Options…` (⌘↵, Ctrl+Enter on Windows) picks
+- **Play Text**: type a text and press Enter to say it with your workspace's defaults. `Play with Options…` (⌘↵, Ctrl+Enter on Windows) picks
   speakers, volume, voice, voice effect and ambience. With a text argument from root search it plays right away.
-- **Talk** (macOS only): records from the microphone as soon as it opens and shows the elapsed time. Enter stops and
+- **Talk to Speakers** (macOS only): records from the microphone as soon as it opens and shows the elapsed time. Enter stops and
   plays the recording with your workspace's defaults, ⌘↵ stops and opens the options (speakers, volume, voice effect,
   ambience), Esc discards it. The recording stops by itself after 60 s, the most Quak plays of a talk. The first time,
   macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
   Security → Microphone. On Windows the command only says that it needs macOS.
 - **Play Sound**: search the sound library by name, description or tag and play a sound.
 - **Play Clip**: play one of your workspace's clips.
-- **Stop**: stop everything that plays on all speakers of your workspace.
-- **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
+- **Stop Playback**: stop everything that plays on all speakers of your workspace.
+- **Play History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
   runs, save it as a clip or copy its text.
 
 Everything you leave out comes from your workspace's defaults on quak.party. The options form remembers your last

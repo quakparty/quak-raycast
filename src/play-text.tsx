@@ -8,7 +8,7 @@ const MAX_CHARACTERS = 1000;
 
 // The search bar is the text: Enter says it with the workspace's defaults, ⌘↵ opens the options.
 // With an argument from root search (or as fallback command) it says the text right away.
-export default function Command(props: LaunchProps<{ arguments: Arguments.Say }>) {
+export default function Command(props: LaunchProps<{ arguments: Arguments.PlayText }>) {
   const initial = (props.arguments.text || props.fallbackText || "").trim();
   const [text, setText] = useState(initial);
   const [isPlaying, setIsPlaying] = useState(Boolean(initial));
@@ -41,7 +41,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.Say }>
           actions={
             <ActionPanel>
               <Action
-                title="Say"
+                title="Play Text"
                 icon={Icon.Play}
                 onAction={async () => {
                   setIsPlaying(true);
