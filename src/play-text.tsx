@@ -1,10 +1,8 @@
 import { Action, ActionPanel, Color, Icon, LaunchProps, List } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { useLimits } from "./lib/limits";
 import { playWithFeedback } from "./lib/play";
-
-// The API's limit for a text play
-const MAX_CHARACTERS = 1000;
 
 // The search bar is the text: Enter says it with the workspace's defaults, ⌘↵ opens the options.
 // With an argument from root search (or as fallback command) it says the text right away.
@@ -13,6 +11,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const [text, setText] = useState(initial);
   const [isPlaying, setIsPlaying] = useState(Boolean(initial));
   const started = useRef(false);
+  const maxCharacters = useLimits().textCharacters;
 
   useEffect(() => {
     if (!initial || started.current) return;
@@ -22,7 +21,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   }, []);
 
   const trimmed = text.trim();
-  const tooLong = trimmed.length > MAX_CHARACTERS;
+  const tooLong = trimmed.length > maxCharacters;
 
   return (
     <List
@@ -36,7 +35,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
           icon={Icon.SpeechBubble}
           title={trimmed}
           accessories={[
-            { text: { value: `${trimmed.length}/${MAX_CHARACTERS}`, color: tooLong ? Color.Red : undefined } },
+            { text: { value: `${trimmed.length}/${maxCharacters}`, color: tooLong ? Color.Red : undefined } },
           ]}
           actions={
             <ActionPanel>

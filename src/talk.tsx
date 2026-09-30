@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { formatClock } from "./lib/format";
 import { withFeedback, sendPlay } from "./lib/play";
-import { MAX_SECONDS, Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
+import { useLimits } from "./lib/limits";
+import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
 
 const PRIVACY_URL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
 
@@ -34,6 +35,8 @@ function Talk() {
   const { push } = useNavigation();
   const recorder = useRef<Recorder>(null);
   const [phase, setPhase] = useState<Phase>("starting");
+  // fixed at the start: the cached limit, or the default on the very first run
+  const maxSeconds = useRef(useLimits().talkSeconds).current;
   const [startedAt, setStartedAt] = useState<number>();
   const [now, setNow] = useState(Date.now());
   // the length once the recording stopped
@@ -41,7 +44,7 @@ function Talk() {
   const [error, setError] = useState<(typeof ERRORS)[keyof typeof ERRORS]>();
 
   useEffect(() => {
-    const current = startRecording();
+    const current = startRecording(maxSeconds);
     recorder.current = current;
     const timer = setInterval(() => {
       setNow(Date.now());
@@ -59,7 +62,7 @@ function Talk() {
           setPhase("recorded");
           showToast({
             style: Toast.Style.Success,
-            title: `Stopped at ${MAX_SECONDS} s`,
+            title: `Stopped at ${formatClock(maxSeconds)}`,
             message: "Send it or discard it",
           });
         }
@@ -123,14 +126,14 @@ function Talk() {
     push(<PlayOptionsForm source={{ kind: "talk", path: recording.path, seconds: recording.seconds }} />);
   }
 
-  const elapsed = recorded ?? (startedAt ? Math.min((now - startedAt) / 1000, MAX_SECONDS) : 0);
-  const left = MAX_SECONDS - elapsed;
+  const elapsed = recorded ?? (startedAt ? Math.min((now - startedAt) / 1000, maxSeconds) : 0);
+  const left = maxSeconds - elapsed;
 
   return (
     <Detail
       navigationTitle="Talk to Speakers"
       isLoading={phase === "starting" || phase === "sending"}
-      markdown={markdown(phase, elapsed, left, error)}
+      markdown={markdown(phase, elapsed, left, maxSeconds, error)}
       actions={
         phase === "recording" || phase === "recorded" ? (
           <ActionPanel>
@@ -147,7 +150,13 @@ function Talk() {
   );
 }
 
-function markdown(phase: Phase, elapsed: number, left: number, error?: { title: string; message: string }) {
+function markdown(
+  phase: Phase,
+  elapsed: number,
+  left: number,
+  maxSeconds: number,
+  error?: { title: string; message: string },
+) {
   const keys = "**Enter** sends it with your workspace's defaults, **⌘↵** opens the options, **Esc** discards it.";
   switch (phase) {
     case "starting":
@@ -156,7 +165,7 @@ function markdown(phase: Phase, elapsed: number, left: number, error?: { title: 
       return [
         `# ● ${formatClock(elapsed)}`,
         "Speak now. " + keys,
-        left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(MAX_SECONDS)}.`,
+        left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(maxSeconds)}.`,
       ].join("\n\n");
     case "recorded":
       return [`# ${formatClock(elapsed)}`, "Recorded. " + keys].join("\n\n");

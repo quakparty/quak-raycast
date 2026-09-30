@@ -3,9 +3,6 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { record } from "swift:../../swift";
 
-// The API plays at most 60 s of speech (talkSeconds), the recording stops there
-export const MAX_SECONDS = 60;
-
 const PREFIX = "quak-talk-";
 // Leftovers of a command that died before it could clean up
 const STALE_MS = 10 * 60 * 1000;
@@ -34,7 +31,8 @@ export function recorderErrorCode(error: unknown): RecorderErrorCode | undefined
 // Starts the Swift helper, which records the microphone into a temp folder. It runs as its own process and is steered
 // through files there (see swift/Sources/Recorder.swift): a heartbeat from here, a stop file with "send" or "cancel".
 // Without a heartbeat for 3 s (the command unloaded) it stops and deletes everything by itself.
-export function startRecording(): Recorder {
+// The recording stops at maxSeconds, the API's talkSeconds.
+export function startRecording(maxSeconds: number): Recorder {
   sweep();
   const directory = mkdtempSync(join(tmpdir(), PREFIX));
   const heartbeat = join(directory, "heartbeat");
@@ -49,7 +47,7 @@ export function startRecording(): Recorder {
   }, 500);
 
   // the heartbeat runs until dispose(), so a kept recording (options form) is not swept by another run
-  const result = record(directory, MAX_SECONDS) as Promise<Recording>;
+  const result = record(directory, maxSeconds) as Promise<Recording>;
   const command = (value: "send" | "cancel") => {
     try {
       writeFileSync(join(directory, "stop"), value);
