@@ -15,7 +15,10 @@ export class KeyFormatError extends Error {
 // The API's message in a failure toast; a missing, malformed or wrong key also links to the key page and the preferences
 export async function showError(error: unknown, title: string) {
   const keyFormat = error instanceof KeyFormatError;
-  const keyRejected = error instanceof QuakError && (error.status === 401 || error.status === 403);
+  // 401: the key is wrong or revoked; 403 only for a too low scope (a missing plan feature is a plain error)
+  const keyRejected =
+    error instanceof QuakError &&
+    (error.status === 401 || (error.status === 403 && error.code === "ERROR_INSUFFICIENT_SCOPE"));
   if (keyFormat || keyRejected) {
     await showToast({
       style: Toast.Style.Failure,
