@@ -83,13 +83,20 @@ function nameOf(names: Record<string, string> | undefined, slug: string) {
 export default function Command() {
   // the history names sounds and clips by slug, the lists give their names; plain objects, because the cache stores
   // JSON and a Map would come back empty
-  const names = useCachedPromise(async () => {
-    const [sounds, clips] = await Promise.all([quak().sounds.list({ limit: 500 }), quak().clips.list()]);
-    return {
-      sounds: Object.fromEntries(sounds.data.map((sound) => [sound.slug, sound.name])),
-      clips: Object.fromEntries(clips.data.map((clip) => [clip.slug, clip.name])),
-    };
-  }, []);
+  const names = useCachedPromise(
+    async () => {
+      const [sounds, clips] = await Promise.all([quak().sounds.list({ limit: 500 }), quak().clips.list()]);
+      return {
+        sounds: Object.fromEntries(sounds.data.map((sound) => [sound.slug, sound.name])),
+        clips: Object.fromEntries(clips.data.map((clip) => [clip.slug, clip.name])),
+      };
+    },
+    [],
+    {
+      // only nicer names; the history itself reports a failure
+      onError: () => undefined,
+    },
+  );
 
   const plays = useCachedPromise(
     () =>

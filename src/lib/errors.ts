@@ -8,7 +8,7 @@ export const KEYS_URL = "https://quak.party/app/settings/keys";
 // The key in the preferences does not look like a Quak key
 export class KeyFormatError extends Error {
   constructor() {
-    super("Quak API keys start with qk_key_.");
+    super("This is not a Quak API key. Paste the whole key, it begins with qk_key_.");
   }
 }
 

@@ -15,7 +15,10 @@ export default function Command() {
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
-  const tags = useCachedPromise(async () => (await quak().sounds.tags()).data, []);
+  const tags = useCachedPromise(async () => (await quak().sounds.tags()).data, [], {
+    // only the tag filter; the sound list itself reports a failure
+    onError: () => undefined,
+  });
   const sounds = useCachedPromise(
     async (q: string, tag: string) =>
       (await quak().sounds.list({ q: q.trim() || undefined, tags: tag === ALL_TAGS ? undefined : tag })).data,
