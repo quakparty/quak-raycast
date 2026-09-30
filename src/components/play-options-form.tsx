@@ -3,6 +3,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import type { Speaker, Voice } from "@quak/js";
 import { showError } from "../lib/errors";
+import { formatSeconds } from "../lib/format";
 import { quak } from "../lib/quak";
 import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
 
@@ -34,11 +35,33 @@ function parseVolume(raw: string): number | undefined | null {
   return Number.isInteger(volume) && volume >= 1 && volume <= 100 ? volume : null;
 }
 
+const TITLES: Record<PlaySource["kind"], string> = {
+  text: "Say",
+  talk: "Talk",
+  sound: "Play Sound",
+  clip: "Play Clip",
+};
+
+function describeSource(source: PlaySource): { title: string; text: string } {
+  switch (source.kind) {
+    case "text":
+      return { title: "Text", text: source.text };
+    case "talk":
+      return { title: "Recording", text: formatSeconds(source.seconds) };
+    case "sound":
+      return { title: "Sound", text: source.name };
+    case "clip":
+      return { title: "Clip", text: source.name };
+  }
+}
+
 // Speakers, volume, voice (text only), voice effect and ambience; each field remembers its last value
 export function PlayOptionsForm({ source }: { source: PlaySource }) {
   const { pop } = useNavigation();
   const [volumeError, setVolumeError] = useState<string>();
   const isText = source.kind === "text";
+  // Say and Talk close Raycast like a plain Enter, sounds and clips go back to their list
+  const closes = source.kind === "text" || source.kind === "talk";
 
   const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, [], {
     onError: (error) => showError(error, "Could not load the speakers"),
@@ -65,12 +88,12 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
       effect: pick(values.effect),
       ambience: pick(values.ambience),
     };
-    // Say closes Raycast like a plain Enter, sounds and clips go back to their list
-    const played = await playWithFeedback(source, options, isText ? "hud" : "toast");
-    if (played && !isText) pop();
+    const played = await playWithFeedback(source, options, closes ? "hud" : "toast");
+    if (played && !closes) pop();
   }
 
-  const title = isText ? "Say" : source.kind === "sound" ? "Play Sound" : "Play Clip";
+  const title = TITLES[source.kind];
+  const described = describeSource(source);
   const effectList = effects.data?.filter((effect) => effect.kind === "effect");
   const ambienceList = effects.data?.filter((effect) => effect.kind === "ambience");
 
@@ -84,10 +107,7 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
         </ActionPanel>
       }
     >
-      <Form.Description
-        title={isText ? "Text" : source.kind === "sound" ? "Sound" : "Clip"}
-        text={isText ? source.text : source.name}
-      />
+      <Form.Description title={described.title} text={described.text} />
       {/* rendered once the choices are there, so the stored values find their items */}
       {speakers.data && (
         <Form.TagPicker id="to" title="Speakers" info="Empty: the workspace's default speakers" storeValue>
@@ -145,7 +165,10 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
           ))}
         </Form.Dropdown>
       )}
-      {!isText && (
+      {source.kind === "talk" && (
+        <Form.Description text="Talk costs 2 credits plus 1 per started 10 s of speech, silence at the start and end is cut." />
+      )}
+      {(source.kind === "sound" || source.kind === "clip") && (
         <Form.Description text="A voice effect or ambience processes the audio on the server: 2 credits instead of 1, and the workspace's intro and outro apply too." />
       )}
     </Form>

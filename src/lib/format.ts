@@ -4,3 +4,9 @@ export function formatSeconds(seconds: number) {
   if (rounded < 60) return `${Math.max(rounded, 1)} s`;
   return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, "0")}`;
 }
+
+// Seconds as a clock, "0:07"
+export function formatClock(seconds: number) {
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
