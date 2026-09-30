@@ -22,6 +22,7 @@
       "subtitle": "Quak",
       "description": "Say a text on your speakers.",
       "keywords": [
+        "sonos",
         "say",
         "speak",
         "tts",
@@ -44,7 +45,7 @@
       "subtitle": "Quak",
       "description": "Record from the microphone and play it on your speakers (macOS only).",
       "keywords": [
-        "talk",
+        "sonos",
         "record",
         "voice",
         "microphone",
@@ -59,6 +60,11 @@
       "title": "Play Sound",
       "subtitle": "Quak",
       "description": "Search the sound library and play a sound on your speakers.",
+      "keywords": [
+        "sonos",
+        "sound effect",
+        "library"
+      ],
       "mode": "view"
     },
     {
@@ -66,6 +72,11 @@
       "title": "Play Clip",
       "subtitle": "Quak",
       "description": "Play one of your workspace's clips on your speakers.",
+      "keywords": [
+        "sonos",
+        "recording",
+        "own audio"
+      ],
       "mode": "view"
     },
     {
@@ -74,7 +85,7 @@
       "subtitle": "Quak",
       "description": "Stop everything that plays on your speakers.",
       "keywords": [
-        "stop",
+        "sonos",
         "silence",
         "quiet"
       ],
@@ -86,9 +97,10 @@
       "subtitle": "Quak",
       "description": "Browse recent plays, replay them, stop them or save them as clips.",
       "keywords": [
-        "history",
+        "sonos",
         "recent",
-        "replay"
+        "replay",
+        "plays"
       ],
       "mode": "view"
     }
