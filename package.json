@@ -40,6 +40,21 @@
       ]
     },
     {
+      "name": "play-selected-text",
+      "title": "Play Selected Text",
+      "subtitle": "Quak",
+      "description": "Play the text selected in any app on your speakers.",
+      "keywords": [
+        "sonos",
+        "say",
+        "speak",
+        "tts",
+        "read aloud",
+        "selection"
+      ],
+      "mode": "no-view"
+    },
+    {
       "name": "talk",
       "title": "Talk to Speakers",
       "subtitle": "Quak",

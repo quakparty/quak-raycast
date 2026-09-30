@@ -6,6 +6,8 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
 
 - **Play Text**: type a text and press Enter to say it with your workspace's defaults. `Play with Options…` (⌘↵, Ctrl+Enter on Windows) picks
   speakers, volume, voice, voice effect and ambience. With a text argument from root search it plays right away.
+- **Play Selected Text**: plays the text you selected in any app with your workspace's defaults. Give it a hotkey to
+  read out anything, anywhere.
 - **Talk to Speakers** (macOS only): records from the microphone as soon as it opens and shows the elapsed time. Enter stops and
   plays the recording with your workspace's defaults, ⌘↵ stops and opens the options (speakers, volume, voice effect,
   ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
