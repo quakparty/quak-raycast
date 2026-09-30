@@ -82,7 +82,7 @@
     },
     {
       "name": "history",
-      "title": "Play History",
+      "title": "History",
       "subtitle": "Quak",
       "description": "Browse recent plays, replay them, stop them or save them as clips.",
       "keywords": [

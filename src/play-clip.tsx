@@ -39,7 +39,7 @@ export default function Command() {
         <List.EmptyView
           icon={Icon.Waveform}
           title="No clips found"
-          description="Save a play as a clip from the Play History command."
+          description="Save a play as a clip from the History command."
         />
       )}
     </List>

@@ -6,4 +6,4 @@
 - Talk to Speakers (macOS): record from the microphone and play it with the workspace's defaults or with options.
 - Play sounds from the library and the workspace's clips.
 - Stop Playback: stop everything on all speakers.
-- Play History: recent plays with replay, stop, save as clip and copy text.
+- History: recent plays with replay, stop, save as clip and copy text.

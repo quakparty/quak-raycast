@@ -14,7 +14,7 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
 - **Play Sound**: search the sound library by name, description or tag and play a sound.
 - **Play Clip**: play one of your workspace's clips.
 - **Stop Playback**: stop everything that plays on all speakers of your workspace.
-- **Play History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
+- **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
   runs, save it as a clip or copy its text.
 
 Everything you leave out comes from your workspace's defaults on quak.party. The options form remembers your last
