@@ -5,12 +5,20 @@ import type { Speaker, Voice } from "@quak/js";
 import { showError } from "../lib/errors";
 import { formatSeconds } from "../lib/format";
 import { quak } from "../lib/quak";
+import { activeSlot } from "../lib/slots";
 import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
 
 // The empty choice of a dropdown: send nothing, the workspace's default applies
 const DEFAULT = "default";
 
-type Values = { to: string[]; volume: string; voice?: string; effect: string; ambience: string };
+// The speakers' field is "to", "to2" or "to3" (one remembered choice per workspace)
+type Values = {
+  [to: `to${string}`]: string[] | undefined;
+  volume: string;
+  voice?: string;
+  effect: string;
+  ambience: string;
+};
 
 const SPEAKER_ICONS: Record<Speaker["type"], Icon> = {
   WORKSPACE: Icon.House,
@@ -55,21 +63,24 @@ function describeSource(source: PlaySource): { title: string; text: string } {
   }
 }
 
-// Speakers, volume, voice (text only), voice effect and ambience; each field remembers its last value
+// Speakers, volume, voice (text only), voice effect and ambience; each field remembers its last value, the speakers
+// per workspace. It plays in the workspace that was active when it opened.
 export function PlayOptionsForm({ source }: { source: PlaySource }) {
+  const [slot] = useState(activeSlot);
+  const toField: `to${string}` = slot === 0 ? "to" : `to${slot + 1}`;
   const { pop } = useNavigation();
   const [volumeError, setVolumeError] = useState<string>();
   const isText = source.kind === "text";
   // Play Text and Talk to Speakers close Raycast like a plain Enter, sounds and clips go back to their list
   const closes = source.kind === "text" || source.kind === "talk";
 
-  const speakers = useCachedPromise(async () => (await quak().speakers.list()).data, [], {
+  const speakers = useCachedPromise(async (slot: number) => (await quak(slot).speakers.list()).data, [slot], {
     onError: (error) => showError(error, "Could not load the speakers"),
   });
-  const effects = useCachedPromise(async () => (await quak().effects.list()).data, [], {
+  const effects = useCachedPromise(async (slot: number) => (await quak(slot).effects.list()).data, [slot], {
     onError: (error) => showError(error, "Could not load the effects"),
   });
-  const voices = useCachedPromise(async () => (await quak().voices.list()).data, [], {
+  const voices = useCachedPromise(async (slot: number) => (await quak(slot).voices.list()).data, [slot], {
     execute: isText,
     onError: (error) => showError(error, "Could not load the voices"),
   });
@@ -82,13 +93,13 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
     }
     const pick = (value: string | undefined) => (value && value !== DEFAULT ? value : undefined);
     const options: PlayOptions = {
-      to: values.to,
+      to: values[toField],
       volume,
       voice: pick(values.voice),
       effect: pick(values.effect),
       ambience: pick(values.ambience),
     };
-    const played = await playWithFeedback(source, options, closes ? "hud" : "toast");
+    const played = await playWithFeedback(source, options, closes ? "hud" : "toast", slot);
     if (played && !closes) pop();
   }
 
@@ -110,7 +121,7 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
       <Form.Description title={described.title} text={described.text} />
       {/* rendered once the choices are there, so the stored values find their items */}
       {speakers.data && (
-        <Form.TagPicker id="to" title="Speakers" info="Empty: the workspace's default speakers" storeValue>
+        <Form.TagPicker id={toField} title="Speakers" info="Empty: the workspace's default speakers" storeValue>
           {speakers.data.map((speaker) => (
             <Form.TagPicker.Item
               key={speaker.slug}

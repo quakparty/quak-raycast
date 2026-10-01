@@ -4,7 +4,7 @@ import { unwrap } from "@quak/js";
 import { quak } from "../lib/quak";
 
 // Saves the audio of a play as a clip; without a name the API picks one (first words or kind and date)
-export function SaveClipForm({ playId, onSaved }: { playId: string; onSaved?: () => void }) {
+export function SaveClipForm({ playId, slot, onSaved }: { playId: string; slot?: number; onSaved?: () => void }) {
   const { pop } = useNavigation();
 
   async function submit(values: { name: string }) {
@@ -12,7 +12,10 @@ export function SaveClipForm({ playId, onSaved }: { playId: string; onSaved?: ()
     const toast = await showToast({ style: Toast.Style.Animated, title: "Saving clip…" });
     try {
       const { data: clip } = await unwrap(
-        quak().api.POST("/v1/plays/{uuid}/save", { params: { path: { uuid: playId } }, body: name ? { name } : {} }),
+        quak(slot).api.POST("/v1/plays/{uuid}/save", {
+          params: { path: { uuid: playId } },
+          body: name ? { name } : {},
+        }),
       );
       toast.style = Toast.Style.Success;
       toast.title = `Saved as “${clip.name}”`;

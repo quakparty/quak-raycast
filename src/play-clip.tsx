@@ -4,6 +4,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
+import { useWorkspace, WorkspaceDropdown } from "./components/workspace-dropdown";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -11,12 +12,17 @@ import { quak } from "./lib/quak";
 // The workspace's clips; the API has no search for them, so Raycast filters by name and slug
 export default function Command(props: LaunchProps) {
   const isPlaying = useQuicklinkPlay("clip", props);
-  const clips = useCachedPromise(async () => (await quak().clips.list()).data, [], {
+  const choice = useWorkspace();
+  const clips = useCachedPromise(async (slot: number) => (await quak(slot).clips.list()).data, [choice.slot], {
     onError: (error) => showError(error, "Could not load clips"),
   });
 
   return (
-    <List isLoading={clips.isLoading || isPlaying} searchBarPlaceholder="Search clips">
+    <List
+      isLoading={clips.isLoading || isPlaying}
+      searchBarPlaceholder="Search clips"
+      searchBarAccessory={<WorkspaceDropdown choice={choice} />}
+    >
       {clips.data?.map((clip) => {
         const source = { kind: "clip" as const, slug: clip.slug, name: clip.name };
         return (
@@ -30,7 +36,12 @@ export default function Command(props: LaunchProps) {
               <ActionPanel>
                 <Action title="Play Clip" icon={Icon.Play} onAction={() => playWithFeedback(source, {}, "toast")} />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
-                <CreateQuicklinkAction kind="clip" slug={clip.slug} name={clip.name} />
+                <CreateQuicklinkAction
+                  kind="clip"
+                  slug={clip.slug}
+                  name={clip.name}
+                  workspace={choice.multiple ? choice.active : undefined}
+                />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={clip.slug} />
               </ActionPanel>

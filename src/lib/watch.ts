@@ -6,8 +6,9 @@ const RECONNECT_MS = 3000;
 
 type Message = { type: "ready" } | { type: "play"; data: Play } | { type: "ping" } | { type: "error"; code: string };
 
-// Every change of a play as it happens, from the API's WebSocket; `connected` tells when to fall back to polling
-export function useLivePlays() {
+// Every change of a play as it happens, from the API's WebSocket; `connected` tells when to fall back to polling.
+// A new slot (another workspace) starts over with its own connection.
+export function useLivePlays(slot: number) {
   const [plays, setPlays] = useState<Record<string, Play>>({});
   const [connected, setConnected] = useState(false);
 
@@ -15,11 +16,13 @@ export function useLivePlays() {
     let socket: WebSocket | undefined;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let closed = false;
+    setPlays({});
+    setConnected(false);
 
     function connect() {
       let key: string;
       try {
-        key = apiKey();
+        key = apiKey(slot);
       } catch {
         return; // the list itself reports the key
       }
@@ -43,7 +46,7 @@ export function useLivePlays() {
       clearTimeout(retry);
       socket?.close();
     };
-  }, []);
+  }, [slot]);
 
   return { plays, connected };
 }

@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Color, Icon, LaunchProps, List } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { useWorkspace, WorkspaceDropdown } from "./components/workspace-dropdown";
 import { useLimits } from "./lib/limits";
 import { playWithFeedback } from "./lib/play";
 
@@ -11,7 +12,8 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const [text, setText] = useState(initial);
   const [isPlaying, setIsPlaying] = useState(Boolean(initial));
   const started = useRef(false);
-  const maxCharacters = useLimits().textCharacters;
+  const choice = useWorkspace();
+  const maxCharacters = useLimits(choice.slot).textCharacters;
 
   useEffect(() => {
     if (!initial || started.current) return;
@@ -29,6 +31,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
       searchText={text}
       onSearchTextChange={setText}
       searchBarPlaceholder="What should your speakers say?"
+      searchBarAccessory={<WorkspaceDropdown choice={choice} />}
     >
       {trimmed ? (
         <List.Item
@@ -44,7 +47,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
                 icon={Icon.Play}
                 onAction={async () => {
                   setIsPlaying(true);
-                  await playWithFeedback({ kind: "text", text: trimmed }, {}, "hud");
+                  await playWithFeedback({ kind: "text", text: trimmed }, {}, "hud", choice.slot);
                   setIsPlaying(false);
                 }}
               />

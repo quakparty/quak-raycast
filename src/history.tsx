@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { unwrap, type Play } from "@quak/js";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
+import { useWorkspace, WorkspaceDropdown } from "./components/workspace-dropdown";
 import { formatSeconds } from "./lib/format";
 import { withFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -84,17 +85,18 @@ function nameOf(names: Record<string, string> | undefined, slug: string) {
 
 // Recent plays of the workspace with their details
 export default function Command() {
+  const choice = useWorkspace();
   // the history names sounds and clips by slug, the lists give their names; plain objects, because the cache stores
   // JSON and a Map would come back empty
   const names = useCachedPromise(
-    async () => {
-      const [sounds, clips] = await Promise.all([quak().sounds.list({ limit: 500 }), quak().clips.list()]);
+    async (slot: number) => {
+      const [sounds, clips] = await Promise.all([quak(slot).sounds.list({ limit: 500 }), quak(slot).clips.list()]);
       return {
         sounds: Object.fromEntries(sounds.data.map((sound) => [sound.slug, sound.name])),
         clips: Object.fromEntries(clips.data.map((clip) => [clip.slug, clip.name])),
       };
     },
-    [],
+    [choice.slot],
     {
       // only nicer names; the history itself reports a failure
       onError: () => undefined,
@@ -102,17 +104,17 @@ export default function Command() {
   );
 
   const plays = useCachedPromise(
-    () =>
+    (slot: number) =>
       async ({ page }: { page: number }) => {
-        const { data, meta } = await quak().plays.list({ limit: PAGE_SIZE, offset: page * PAGE_SIZE });
+        const { data, meta } = await quak(slot).plays.list({ limit: PAGE_SIZE, offset: page * PAGE_SIZE });
         return { data, hasMore: meta.offset + meta.count < meta.total };
       },
-    [],
+    [choice.slot],
     { keepPreviousData: true, onError: (error) => showError(error, "Could not load the history") },
   );
 
   // changes arrive live over the API's WebSocket; while it is down, reload every 2 s as long as a play is running
-  const live = useLivePlays();
+  const live = useLivePlays(choice.slot);
   const listed = new Set(plays.data?.map((play) => play.id));
   const shown = [
     ...Object.values(live.plays)
@@ -164,8 +166,11 @@ export default function Command() {
   async function replay(play: Play) {
     const done = await withFeedback(
       async () =>
-        (await unwrap(quak().api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid: play.id } }, body: {} })))
-          .data,
+        (
+          await unwrap(
+            quak(choice.slot).api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid: play.id } }, body: {} }),
+          )
+        ).data,
       "toast",
       "Replaying…",
     );
@@ -175,7 +180,7 @@ export default function Command() {
   async function stop(play: Play) {
     const toast = await showToast({ style: Toast.Style.Animated, title: "Stopping…" });
     try {
-      await quak().plays.stop(play.id);
+      await quak(choice.slot).plays.stop(play.id);
       toast.style = Toast.Style.Success;
       toast.title = "Stopped";
       plays.revalidate();
@@ -250,7 +255,13 @@ export default function Command() {
   }
 
   return (
-    <List isLoading={plays.isLoading} isShowingDetail pagination={plays.pagination} searchBarPlaceholder="Filter plays">
+    <List
+      isLoading={plays.isLoading}
+      isShowingDetail
+      pagination={plays.pagination}
+      searchBarPlaceholder="Filter plays"
+      searchBarAccessory={<WorkspaceDropdown choice={choice} />}
+    >
       {shown.map((play) => (
         <List.Item
           key={play.id}
@@ -273,7 +284,7 @@ export default function Command() {
                   title="Save as Clip"
                   icon={Icon.SaveDocument}
                   shortcut={Keyboard.Shortcut.Common.Save}
-                  target={<SaveClipForm playId={play.id} onSaved={() => names.revalidate()} />}
+                  target={<SaveClipForm playId={play.id} slot={choice.slot} onSaved={() => names.revalidate()} />}
                 />
               )}
               {hasText(play) && (

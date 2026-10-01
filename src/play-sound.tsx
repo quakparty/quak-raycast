@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
+import { SwitchWorkspaceAction, useWorkspace } from "./components/workspace-dropdown";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -14,6 +15,8 @@ const ALL_TAGS = "all";
 // The sound library, searched by the API (name, description, search words), filtered by tag
 export default function Command(props: LaunchProps) {
   const isPlaying = useQuicklinkPlay("sound", props);
+  // sounds are the same in every workspace; the active one decides where they play
+  const choice = useWorkspace();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
@@ -35,6 +38,7 @@ export default function Command(props: LaunchProps) {
       onSearchTextChange={setSearch}
       throttle
       searchBarPlaceholder="Search sounds"
+      navigationTitle={choice.multiple ? `Play Sound · ${choice.active.name}` : undefined}
       searchBarAccessory={
         <List.Dropdown tooltip="Tag" storeValue onChange={setTag}>
           <List.Dropdown.Item value={ALL_TAGS} title="All Sounds" />
@@ -60,9 +64,15 @@ export default function Command(props: LaunchProps) {
               <ActionPanel>
                 <Action title="Play Sound" icon={Icon.Play} onAction={() => playWithFeedback(source, {}, "toast")} />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
-                <CreateQuicklinkAction kind="sound" slug={sound.slug} name={sound.name} />
+                <CreateQuicklinkAction
+                  kind="sound"
+                  slug={sound.slug}
+                  name={sound.name}
+                  workspace={choice.multiple ? choice.active : undefined}
+                />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={sound.slug} />
+                <SwitchWorkspaceAction choice={choice} />
               </ActionPanel>
             }
           />
