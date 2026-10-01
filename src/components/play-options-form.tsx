@@ -67,6 +67,9 @@ const KIND_NAMES: Record<PlaySource["kind"], string> = {
 };
 
 // " in Name" with more than one key
+// An effect or ambience other than "none" and the workspace's default processes a sound or clip on the server
+const processes = (value: string | undefined) => Boolean(value) && value !== DEFAULT && value !== "none";
+
 function workspaceIn(slot: number) {
   return configuredSlots().length > 1 ? ` in ${cachedWorkspace(slot)?.name ?? slotName(slot)}` : "";
 }
@@ -114,6 +117,9 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   const { pop } = useNavigation();
   const [volumeError, setVolumeError] = useState<string>();
   const [textError, setTextError] = useState<string>();
+  // the chosen effect and ambience, for the note that only matters when one of them processes a sound or clip
+  const [effectValue, setEffectValue] = useState<string>();
+  const [ambienceValue, setAmbienceValue] = useState<string>();
   const isText = source.kind === "text";
   // Play Text and Talk to Speakers close Raycast like a plain Enter, sounds and clips go back to their list
   const closes = source.kind === "text" || source.kind === "talk";
@@ -364,6 +370,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
           title="Voice Effect"
           defaultValue={start(preset?.effect)}
           storeValue={remember}
+          onChange={setEffectValue}
         >
           <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
           <Form.Dropdown.Item value="none" title={`None${mine(saved?.effect, "none")}`} />
@@ -384,6 +391,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
           title="Ambience"
           defaultValue={start(preset?.ambience)}
           storeValue={remember}
+          onChange={setAmbienceValue}
         >
           <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
           <Form.Dropdown.Item value="none" title={`None${mine(saved?.ambience, "none")}`} />
@@ -397,12 +405,12 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
           ))}
         </Form.Dropdown>
       )}
-      {(source.kind === "sound" || source.kind === "clip") && (
+      {(source.kind === "sound" || source.kind === "clip") && (processes(effectValue) || processes(ambienceValue)) && (
         <>
           <Form.Separator />
           <Form.Description
             title="Note"
-            text="With a voice effect or ambience, the workspace's intro and outro apply too."
+            text="With an effect or ambience, the sound is processed on the server and the workspace's intro and outro play too."
           />
         </>
       )}
