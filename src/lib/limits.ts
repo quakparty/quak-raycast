@@ -1,5 +1,4 @@
 import { useCachedPromise } from "@raycast/utils";
-import { unwrap } from "@quak/js";
 import { quak } from "./quak";
 import { activeSlot } from "./slots";
 
@@ -12,8 +11,8 @@ const DEFAULT_LIMITS: Limits = { textCharacters: 1000, talkSeconds: 180 };
 export function useLimits(slot = activeSlot()): Limits {
   const { data } = useCachedPromise(
     async (slot: number) => {
-      const { data } = await unwrap(quak(slot).api.GET("/v1/workspace"));
-      return { ...DEFAULT_LIMITS, ...(data as { limits?: Partial<Limits> }).limits };
+      const { data } = await quak(slot).workspace.get();
+      return { ...DEFAULT_LIMITS, ...data.limits };
     },
     [slot],
     // only the limits; the play itself reports a failure

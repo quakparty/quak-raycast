@@ -1,14 +1,13 @@
-import { unwrap } from "@quak/js";
 import { quak } from "./quak";
 import { configuredSlots } from "./slots";
 
 // A configured key's workspace; slug is missing when the lookup failed
 export type Workspace = { slot: number; name: string; slug?: string };
 
-// The workspace of one key. The only place that asks; GET /v1/keys/current may replace it later.
+// The workspace of one key (GET /v1/keys/current, works with any scope). The only place that asks.
 export async function lookupWorkspace(slot: number): Promise<{ name: string; slug: string }> {
-  const { data } = await unwrap(quak(slot).api.GET("/v1/workspace"));
-  return { name: data.name, slug: data.slug };
+  const { data } = await quak(slot).keys.current();
+  return { name: data.workspace.name, slug: data.workspace.slug };
 }
 
 // The fallback name of a slot whose lookup failed
