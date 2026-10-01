@@ -81,7 +81,7 @@ export default function Command(props: LaunchProps) {
                   workspace={choice.multiple ? choice.active : undefined}
                 />
                 <StopAction />
-                <Action.CopyToClipboard title="Copy Slug" content={sound.slug} />
+                <Action.CopyToClipboard title="Copy Sound Slug" content={sound.slug} />
                 <ExtensionActions choice={choice} />
               </ActionPanel>
             }

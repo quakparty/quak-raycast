@@ -13,9 +13,9 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
   macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
   Security → Microphone. On Windows the command only says that it needs macOS.
-- **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Quicklink` (⌘⇧L)
+- **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Sound Quicklink` (⌘⇧L)
   saves a quicklink that plays this sound right away with your defaults (see below); give it an alias or a hotkey.
-- **Play Clip**: play one of your workspace's clips. `Create Quicklink` (⌘⇧L) works like in Play Sound.
+- **Play Clip**: play one of your workspace's clips. `Create Clip Quicklink` (⌘⇧L) works like in Play Sound.
 - **Stop Playback**: stop everything that plays on all speakers of your workspace.
 - **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
   runs, save it as a clip or copy its text.
@@ -25,7 +25,7 @@ choices, or starts from your defaults when you saved some. Errors from Quak (spe
 
 ## Your defaults
 
-In the options form, `Play and Save as Default` (⌘⇧↵) or `Save as Default` (⌘S) keeps the options you set as the
+In the options form, `Play and Save as Your Defaults` (⌘⇧↵) or `Save as Your Defaults` (⌘S) keeps the options you set as the
 extension's own defaults. There is one set each for texts (Play Text and Play Selected Text), talk, sounds and clips,
 and one per workspace, since the speakers differ. Enter in these commands and quicklinks then play with your
 defaults; whatever a set leaves out (a field on "Workspace default") still comes from the workspace. The options

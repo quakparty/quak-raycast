@@ -230,12 +230,12 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
         <ActionPanel>
           <Action.SubmitForm title={title} icon={Icon.Play} onSubmit={(values: Values) => play(values)} />
           <Action.SubmitForm
-            title="Play and Save as Default"
+            title="Play and Save as Your Defaults"
             icon={Icon.SaveDocument}
             onSubmit={(values: Values) => play(values, true)}
           />
           <Action.SubmitForm
-            title="Save as Default"
+            title="Save as Your Defaults"
             icon={Icon.Bookmark}
             shortcut={Keyboard.Shortcut.Common.Save}
             onSubmit={saveOnly}

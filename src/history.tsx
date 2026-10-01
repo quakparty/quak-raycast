@@ -266,7 +266,7 @@ export default function Command() {
             <ActionPanel>
               {play.canReplay && <Action title="Replay" icon={Icon.Repeat} onAction={() => replay(play)} />}
               {isRunning(play) && (
-                <Action title="Stop" icon={Icon.Stop} shortcut={STOP_SHORTCUT} onAction={() => stop(play)} />
+                <Action title="Stop This Play" icon={Icon.Stop} shortcut={STOP_SHORTCUT} onAction={() => stop(play)} />
               )}
               {play.canSave && (
                 <Action.Push
@@ -285,7 +285,7 @@ export default function Command() {
               )}
               <StopAction shortcut={STOP_ALL_SHORTCUT} />
               <Action
-                title="Refresh"
+                title="Refresh History"
                 icon={Icon.ArrowClockwise}
                 shortcut={Keyboard.Shortcut.Common.Refresh}
                 onAction={() => plays.revalidate()}

@@ -35,7 +35,7 @@ export function CreateQuicklinkAction({
   const link = createDeeplink({ command: COMMANDS[kind], context });
   return (
     <Action.CreateQuicklink
-      title="Create Quicklink"
+      title={`Create ${kind === "sound" ? "Sound" : "Clip"} Quicklink`}
       icon={Icon.Link}
       shortcut={QUICKLINK_SHORTCUT}
       quicklink={{
