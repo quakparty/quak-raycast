@@ -277,11 +277,16 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
         </ActionPanel>
       }
     >
-      {saved && (
-        <Form.Description
-          text={`Your defaults for ${KIND_NAMES[kind]}${workspaceIn(slot)}: ${describeDefaults(saved, speakers.data, voices.data, effects.data)}. Fields on “Workspace default” use the workspace's.`}
-        />
-      )}
+      {/* the fields show the values; the header only says where they come from */}
+      <Form.Description
+        title="Your Defaults"
+        text={
+          saved
+            ? `Saved for ${KIND_NAMES[kind]}${workspaceIn(slot)}. Empty fields and “Workspace default” use the workspace's. Reset in ⌘K.`
+            : `None for ${KIND_NAMES[kind]}${workspaceIn(slot)} yet, so the workspace's apply. ⌘S saves these options as yours.`
+        }
+      />
+      <Form.Separator />
       {source.kind === "text" ? (
         <Form.TextArea
           id="text"
@@ -393,12 +398,14 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
         </Form.Dropdown>
       )}
       {(source.kind === "sound" || source.kind === "clip") && (
-        <Form.Description text="With a voice effect or ambience, the workspace's intro and outro apply too." />
+        <>
+          <Form.Separator />
+          <Form.Description
+            title="Note"
+            text="With a voice effect or ambience, the workspace's intro and outro apply too."
+          />
+        </>
       )}
-      {/* the save actions sit in ⌘K, so the form says they exist */}
-      <Form.Description
-        text={`⌘S saves these options as your defaults for ${KIND_NAMES[kind]}${workspaceIn(slot)}, then Enter in the list uses them. More in ⌘K.`}
-      />
     </Form>
   );
 }
