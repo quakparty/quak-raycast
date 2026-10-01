@@ -5,6 +5,7 @@ import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
+import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -13,6 +14,8 @@ import { quak } from "./lib/quak";
 export default function Command(props: LaunchProps) {
   const isPlaying = useQuicklinkPlay("clip", props);
   const choice = useWorkspace();
+  // own defaults for clips in this workspace: Enter's title says so
+  const defaults = useDefaults("clip", choice.slot);
   const clips = useCachedPromise(async (slot: number) => (await quak(slot).clips.list()).data, [choice.slot], {
     onError: (error) => showError(error, "Could not load clips"),
   });
@@ -34,11 +37,15 @@ export default function Command(props: LaunchProps) {
             actions={
               <ActionPanel>
                 <Action
-                  title="Play Clip"
+                  title={defaults.data ? "Play Clip with Your Defaults" : "Play Clip"}
                   icon={Icon.Play}
                   onAction={() => playWithDefaults(source, "toast", choice.slot)}
                 />
-                <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
+                <Action.Push
+                  title="Play with Options…"
+                  icon={Icon.Gear}
+                  target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
+                />
                 <CreateQuicklinkAction
                   kind="clip"
                   slug={clip.slug}

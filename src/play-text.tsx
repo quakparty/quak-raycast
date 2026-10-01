@@ -2,6 +2,7 @@ import { Action, ActionPanel, Color, Icon, LaunchProps, List } from "@raycast/ap
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
+import { useDefaults } from "./lib/defaults";
 import { useLimits } from "./lib/limits";
 import { playWithDefaults } from "./lib/play";
 
@@ -14,6 +15,8 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const started = useRef(false);
   const choice = useWorkspace();
   const maxCharacters = useLimits(choice.slot).textCharacters;
+  // own defaults for texts: Enter's title says so
+  const defaults = useDefaults("text", choice.slot);
 
   useEffect(() => {
     if (!initial || started.current) return;
@@ -44,7 +47,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
           actions={
             <ActionPanel>
               <Action
-                title="Play Text"
+                title={defaults.data ? "Play Text with Your Defaults" : "Play Text"}
                 icon={Icon.Play}
                 onAction={async () => {
                   setIsPlaying(true);
@@ -55,7 +58,9 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
               <Action.Push
                 title="Play with Options…"
                 icon={Icon.Gear}
-                target={<PlayOptionsForm source={{ kind: "text", text: trimmed }} />}
+                target={
+                  <PlayOptionsForm source={{ kind: "text", text: trimmed }} onDefaultsChange={defaults.revalidate} />
+                }
               />
               <ExtensionActions choice={choice} />
             </ActionPanel>
@@ -65,13 +70,13 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
         <List.EmptyView
           icon={Icon.SpeechBubble}
           title="Type what to say"
-          description="Type in the search bar: Enter plays it, ⌘↵ opens the options. Or press Enter to write it in the form."
+          description={`Type in the search bar: Enter plays it${defaults.data ? " with your defaults" : ""}, ⌘↵ opens the options. Or press Enter to write it in the form.`}
           actions={
             <ActionPanel>
               <Action.Push
                 title="Play with Options…"
                 icon={Icon.Gear}
-                target={<PlayOptionsForm source={{ kind: "text", text: "" }} />}
+                target={<PlayOptionsForm source={{ kind: "text", text: "" }} onDefaultsChange={defaults.revalidate} />}
               />
               <ExtensionActions choice={choice} />
             </ActionPanel>

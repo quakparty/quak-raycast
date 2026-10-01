@@ -4,6 +4,7 @@ import { PlayOptionsForm } from "./components/play-options-form";
 import { useWorkspace } from "./components/switch-workspace-action";
 import { formatClock } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
+import { useDefaults } from "./lib/defaults";
 import { useLimits } from "./lib/limits";
 import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
 
@@ -36,6 +37,9 @@ function Talk() {
   const { push } = useNavigation();
   // no switch here, it records right away; with more than one key the text names the active workspace
   const choice = useWorkspace();
+  // own defaults for talk: Enter's title and the text say so
+  const defaults = useDefaults("talk", choice.slot);
+  const own = Boolean(defaults.data);
   const recorder = useRef<Recorder>(null);
   const [phase, setPhase] = useState<Phase>("starting");
   // fixed at the start: the cached limit, or the default on the very first run
@@ -126,7 +130,12 @@ function Talk() {
     const recording = await finish();
     if (!recording) return;
     setPhase("recorded");
-    push(<PlayOptionsForm source={{ kind: "talk", path: recording.path, seconds: recording.seconds }} />);
+    push(
+      <PlayOptionsForm
+        source={{ kind: "talk", path: recording.path, seconds: recording.seconds }}
+        onDefaultsChange={defaults.revalidate}
+      />,
+    );
   }
 
   const elapsed = recorded ?? (startedAt ? Math.min((now - startedAt) / 1000, maxSeconds) : 0);
@@ -135,11 +144,23 @@ function Talk() {
   return (
     <Detail
       isLoading={phase === "starting" || phase === "sending"}
-      markdown={markdown(phase, elapsed, left, maxSeconds, choice.multiple ? choice.active.name : undefined, error)}
+      markdown={markdown(
+        phase,
+        elapsed,
+        left,
+        maxSeconds,
+        own,
+        choice.multiple ? choice.active.name : undefined,
+        error,
+      )}
       actions={
         phase === "recording" || phase === "recorded" ? (
           <ActionPanel>
-            <Action title={phase === "recording" ? "Stop and Talk" : "Talk"} icon={Icon.Play} onAction={send} />
+            <Action
+              title={`${phase === "recording" ? "Stop and Talk" : "Talk"}${own ? " with Your Defaults" : ""}`}
+              icon={Icon.Play}
+              onAction={send}
+            />
             <Action title="Talk with Options…" icon={Icon.Gear} onAction={sendWithOptions} />
           </ActionPanel>
         ) : phase === "failed" && error === ERRORS.MICROPHONE_DENIED ? (
@@ -157,12 +178,14 @@ function markdown(
   elapsed: number,
   left: number,
   maxSeconds: number,
+  own: boolean,
   workspace?: string,
   error?: { title: string; message: string },
 ) {
   // " in Name" with more than one key
   const where = workspace ? ` in **${workspace}**` : "";
-  const keys = "**Enter** sends it with your workspace's defaults, **⌘↵** opens the options, **Esc** discards it.";
+  const defaults = own ? "your defaults" : "your workspace's defaults";
+  const keys = `**Enter** sends it with ${defaults}, **⌘↵** opens the options, **Esc** discards it.`;
   switch (phase) {
     case "starting":
       return "## Starting the microphone…\n\nThe first time, macOS asks whether Raycast may use the microphone.";

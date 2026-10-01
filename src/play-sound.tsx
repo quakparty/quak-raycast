@@ -6,6 +6,7 @@ import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
+import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -17,6 +18,8 @@ export default function Command(props: LaunchProps) {
   const isPlaying = useQuicklinkPlay("sound", props);
   // sounds are the same in every workspace; the active one decides where they play
   const choice = useWorkspace();
+  // own defaults for sounds in this workspace: Enter's title says so
+  const defaults = useDefaults("sound", choice.slot);
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
@@ -62,11 +65,15 @@ export default function Command(props: LaunchProps) {
             actions={
               <ActionPanel>
                 <Action
-                  title="Play Sound"
+                  title={defaults.data ? "Play Sound with Your Defaults" : "Play Sound"}
                   icon={Icon.Play}
                   onAction={() => playWithDefaults(source, "toast", choice.slot)}
                 />
-                <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
+                <Action.Push
+                  title="Play with Options…"
+                  icon={Icon.Gear}
+                  target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
+                />
                 <CreateQuicklinkAction
                   kind="sound"
                   slug={sound.slug}
