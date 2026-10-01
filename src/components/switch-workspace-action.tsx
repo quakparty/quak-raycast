@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, Keyboard } from "@raycast/api";
+import { Action, ActionPanel, Icon, Keyboard, openExtensionPreferences } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { activeSlot, configuredSlots, setActiveSlot } from "../lib/slots";
@@ -62,5 +62,15 @@ export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
         />
       ))}
     </ActionPanel.Submenu>
+  );
+}
+
+// The actions every list offers at the end: switch the workspace (more than one key) and open the preferences
+export function ExtensionActions({ choice }: { choice: WorkspaceChoice }) {
+  return (
+    <ActionPanel.Section>
+      <SwitchWorkspaceAction choice={choice} />
+      <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
+    </ActionPanel.Section>
   );
 }

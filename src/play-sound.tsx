@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
-import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
+import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -75,7 +75,7 @@ export default function Command(props: LaunchProps) {
                 />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={sound.slug} />
-                <SwitchWorkspaceAction choice={choice} />
+                <ExtensionActions choice={choice} />
               </ActionPanel>
             }
           />
@@ -86,11 +86,9 @@ export default function Command(props: LaunchProps) {
           icon={Icon.Music}
           title="No sounds found"
           actions={
-            choice.multiple ? (
-              <ActionPanel>
-                <SwitchWorkspaceAction choice={choice} />
-              </ActionPanel>
-            ) : undefined
+            <ActionPanel>
+              <ExtensionActions choice={choice} />
+            </ActionPanel>
           }
         />
       )}

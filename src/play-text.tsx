@@ -1,7 +1,7 @@
 import { Action, ActionPanel, Color, Icon, LaunchProps, List } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
-import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
+import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useLimits } from "./lib/limits";
 import { playWithFeedback } from "./lib/play";
 
@@ -57,7 +57,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
                 icon={Icon.Gear}
                 target={<PlayOptionsForm source={{ kind: "text", text: trimmed }} />}
               />
-              <SwitchWorkspaceAction choice={choice} />
+              <ExtensionActions choice={choice} />
             </ActionPanel>
           }
         />
@@ -67,11 +67,9 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
           title="Type what to say"
           description="Enter says it with your workspace's defaults. Play with Options… is in the actions."
           actions={
-            choice.multiple ? (
-              <ActionPanel>
-                <SwitchWorkspaceAction choice={choice} />
-              </ActionPanel>
-            ) : undefined
+            <ActionPanel>
+              <ExtensionActions choice={choice} />
+            </ActionPanel>
           }
         />
       )}

@@ -4,7 +4,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
-import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
+import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -47,7 +47,7 @@ export default function Command(props: LaunchProps) {
                 />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={clip.slug} />
-                <SwitchWorkspaceAction choice={choice} />
+                <ExtensionActions choice={choice} />
               </ActionPanel>
             }
           />
@@ -59,11 +59,9 @@ export default function Command(props: LaunchProps) {
           title="No clips found"
           description="Save a play as a clip from the History command."
           actions={
-            choice.multiple ? (
-              <ActionPanel>
-                <SwitchWorkspaceAction choice={choice} />
-              </ActionPanel>
-            ) : undefined
+            <ActionPanel>
+              <ExtensionActions choice={choice} />
+            </ActionPanel>
           }
         />
       )}

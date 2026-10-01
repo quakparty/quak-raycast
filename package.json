@@ -132,16 +132,16 @@
     {
       "name": "apiKey2",
       "title": "Second Workspace",
-      "description": "Optional: a key for another workspace; switch in the commands' dropdown",
-      "placeholder": "qk_key_… from another workspace",
+      "description": "Optional: a key for another workspace, switch with Switch Workspace (⌘⇧W) in the commands",
+      "placeholder": "qk_key_…",
       "type": "password",
       "required": false
     },
     {
       "name": "apiKey3",
       "title": "Third Workspace",
-      "description": "Optional: a key for another workspace; switch in the commands' dropdown",
-      "placeholder": "qk_key_… from another workspace",
+      "description": "Optional: a key for another workspace, switch with Switch Workspace (⌘⇧W) in the commands",
+      "placeholder": "qk_key_…",
       "type": "password",
       "required": false
     }

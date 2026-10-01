@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import type { Play } from "@quak/js";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
-import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
+import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
 import { withFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -290,7 +290,7 @@ export default function Command() {
                 shortcut={Keyboard.Shortcut.Common.Refresh}
                 onAction={() => plays.revalidate()}
               />
-              <SwitchWorkspaceAction choice={choice} />
+              <ExtensionActions choice={choice} />
             </ActionPanel>
           }
         />
@@ -300,11 +300,9 @@ export default function Command() {
           icon={Icon.Clock}
           title="No plays yet"
           actions={
-            choice.multiple ? (
-              <ActionPanel>
-                <SwitchWorkspaceAction choice={choice} />
-              </ActionPanel>
-            ) : undefined
+            <ActionPanel>
+              <ExtensionActions choice={choice} />
+            </ActionPanel>
           }
         />
       )}
