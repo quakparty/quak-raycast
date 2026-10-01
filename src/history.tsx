@@ -2,7 +2,7 @@ import { Action, ActionPanel, Color, Icon, Keyboard, List, showToast, Toast } fr
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect } from "react";
-import { unwrap, type Play } from "@quak/js";
+import type { Play } from "@quak/js";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
 import { useWorkspace, WorkspaceDropdown } from "./components/workspace-dropdown";
@@ -68,11 +68,6 @@ const POLL_MS = 2000;
 const isRunning = (play: Play) => ["SCHEDULED", "PENDING", "ACTIVE"].includes(play.status);
 const hasText = (play: Play) =>
   play.type === "TEXT" && play.params.textExpired !== true && Boolean(param(play, "text"));
-
-// Replay and save come from the API (canReplay, canSave): it knows whether the audio still exists
-type Abilities = { canReplay?: boolean; canSave?: boolean };
-const canReplay = (play: Play) => (play as Play & Abilities).canReplay === true;
-const canSave = (play: Play) => (play as Play & Abilities).canSave === true;
 
 function typeName(play: Play) {
   return isLive(play) ? "Talk Live" : TYPE_NAMES[play.type];
@@ -165,12 +160,7 @@ export default function Command() {
 
   async function replay(play: Play) {
     const done = await withFeedback(
-      async () =>
-        (
-          await unwrap(
-            quak(choice.slot).api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid: play.id } }, body: {} }),
-          )
-        ).data,
+      async () => (await quak(choice.slot).plays.replay(play.id)).data,
       "toast",
       "Replaying…",
     );
@@ -275,11 +265,11 @@ export default function Command() {
           detail={detail(play)}
           actions={
             <ActionPanel>
-              {canReplay(play) && <Action title="Replay" icon={Icon.Repeat} onAction={() => replay(play)} />}
+              {play.canReplay && <Action title="Replay" icon={Icon.Repeat} onAction={() => replay(play)} />}
               {isRunning(play) && (
                 <Action title="Stop" icon={Icon.Stop} shortcut={STOP_SHORTCUT} onAction={() => stop(play)} />
               )}
-              {canSave(play) && (
+              {play.canSave && (
                 <Action.Push
                   title="Save as Clip"
                   icon={Icon.SaveDocument}
