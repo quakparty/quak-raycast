@@ -8,4 +8,4 @@
 - Play sounds from the library and the workspace's clips, or one of them straight from a quicklink.
 - Stop Playback: stop everything on all speakers.
 - History: recent plays with replay, stop, save as clip and copy text.
-- Up to three workspaces, one key each: switch in the search bar's dropdown; quicklinks play where they were made.
+- Up to three workspaces, one key each: switch with `Switch Workspace` (⌘⇧W) in any list's actions; quicklinks play where they were made.

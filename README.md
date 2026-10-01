@@ -29,10 +29,11 @@ Create an API key with scope `play` (or `create` to also save plays as clips) at
 preferences.
 
 Each key belongs to one workspace. For a second or third workspace, add its key as **Second Workspace** or **Third
-Workspace**. Play Text, Play Clip and History then show a workspace dropdown in the search bar (Play Sound has
-`Switch Workspace`, ⌘⇧W, and shows the workspace in its title). The choice applies to all commands, including Talk to
-Speakers, Play Selected Text and Stop Playback, until you switch again; if its key is removed, the first key applies.
-A quicklink made with more than one key plays in the workspace it was made in. With a single key nothing changes.
+Workspace**. Play Text, Play Sound, Play Clip and History then have `Switch Workspace` in their actions (⌘⇧W, Ctrl+Shift+W
+on Windows), also with an empty list, and show the active workspace in the search bar's placeholder. The choice applies
+to all commands, including Talk to Speakers, Play Selected Text and Stop Playback, until you switch again; their
+messages name the workspace. If its key is removed, the first key applies. A quicklink made with more than one key
+plays in the workspace it was made in. With a single key nothing changes.
 
 Tip: add **Play Text** as a fallback command (Raycast Settings → Launcher → Fallback Commands). Then any text you
 type in Raycast's root search can go straight to your speakers.
