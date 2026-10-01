@@ -2,9 +2,9 @@ import { showToast, Toast } from "@raycast/api";
 import { showError } from "./errors";
 import { quak } from "./quak";
 
-// Stops what plays on every speaker of the workspace ("all"), also clips of other apps
-export async function stopAll() {
-  const { data } = await quak().stop({ to: ["all"] });
+// Stops what plays on every speaker of the workspace ("all"), also clips of other apps; the active one by default
+export async function stopAll(slot?: number) {
+  const { data } = await quak(slot).stop({ to: ["all"] });
   const stopped = data.players.filter((player) => player.status !== "FAILED");
   return stopped.length ? `Stopped on ${stopped.map((player) => player.name).join(", ")}` : "Stopped";
 }

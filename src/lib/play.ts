@@ -3,6 +3,8 @@ import { readFile } from "fs/promises";
 import { showError } from "./errors";
 import type { Play, PlayTextParams } from "@quak/js";
 import { quak } from "./quak";
+import { activeSlot } from "./slots";
+import { workspaceSuffix } from "./workspaces";
 
 // What to play: kinds in the API's order, text, talk, sound, clip
 export type PlaySource =
@@ -87,8 +89,14 @@ export function describePlay(play: Play): { title: string; message?: string; ski
 export type Feedback = "hud" | "toast";
 
 // Runs a play request with feedback: the API's message on errors, where it plays or why it was skipped on success.
-// Returns the play, or null when it failed.
-export async function withFeedback(request: () => Promise<Play>, feedback: Feedback, busy = "Playing…") {
+// With more than one key the HUD names the workspace (slot: the one the request uses). Returns the play, or null when
+// it failed.
+export async function withFeedback(
+  request: () => Promise<Play>,
+  feedback: Feedback,
+  busy = "Playing…",
+  slot = activeSlot(),
+) {
   const toast = feedback === "toast" ? await showToast({ style: Toast.Style.Animated, title: busy }) : null;
   try {
     const play = await request();
@@ -98,7 +106,8 @@ export async function withFeedback(request: () => Promise<Play>, feedback: Feedb
       toast.title = title;
       toast.message = message;
     } else {
-      await showHUD(message ? `${title} · ${message}` : title);
+      const where = `${title}${await workspaceSuffix(slot)}`;
+      await showHUD(message ? `${where} · ${message}` : where);
     }
     return play;
   } catch (error) {
@@ -109,5 +118,5 @@ export async function withFeedback(request: () => Promise<Play>, feedback: Feedb
 }
 
 export function playWithFeedback(source: PlaySource, options: PlayOptions, feedback: Feedback, slot?: number) {
-  return withFeedback(() => sendPlay(source, options, slot), feedback);
+  return withFeedback(() => sendPlay(source, options, slot), feedback, undefined, slot);
 }

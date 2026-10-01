@@ -3,7 +3,8 @@ import { createDeeplink } from "@raycast/utils";
 import { useEffect, useRef, useState } from "react";
 import { showError } from "../lib/errors";
 import { playWithFeedback } from "../lib/play";
-import { listWorkspaces, type Workspace } from "../lib/workspaces";
+import { configuredSlots } from "../lib/slots";
+import { cachedWorkspace, listWorkspaces, type Workspace } from "../lib/workspaces";
 
 type Kind = "sound" | "clip";
 
@@ -46,8 +47,11 @@ export function CreateQuicklinkAction({
   );
 }
 
-// The slot whose key belongs to the workspace with this slug; undefined after an error toast
+// The slot whose key belongs to the workspace with this slug, from the cache when it knows it; undefined after an
+// error toast
 async function findSlot(workspace: string) {
+  const cached = configuredSlots().find((slot) => cachedWorkspace(slot)?.slug === workspace);
+  if (cached !== undefined) return cached;
   const { workspaces, errors } = await listWorkspaces();
   const match = workspaces.find((item) => item.slug === workspace);
   if (match) return match.slot;
