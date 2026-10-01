@@ -6,3 +6,5 @@
 3. Paste it here.
 
 The key belongs to one workspace: plays use its speakers and defaults.
+
+More workspaces: add a key from each as Second Workspace and Third Workspace, then switch in the commands' dropdown.

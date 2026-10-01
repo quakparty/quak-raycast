@@ -28,6 +28,12 @@ choices. Errors from Quak (speaker offline, out of credits etc.) show as a toast
 Create an API key with scope `play` (or `create` to also save plays as clips) at [quak.party/app/settings/keys](https://quak.party/app/settings/keys) and paste it into the extension's
 preferences.
 
+Each key belongs to one workspace. For a second or third workspace, add its key as **Second Workspace** or **Third
+Workspace**. Play Text, Play Clip and History then show a workspace dropdown in the search bar (Play Sound has
+`Switch Workspace`, ⌘⇧W, and shows the workspace in its title). The choice applies to all commands, including Talk to
+Speakers, Play Selected Text and Stop Playback, until you switch again; if its key is removed, the first key applies.
+A quicklink made with more than one key plays in the workspace it was made in. With a single key nothing changes.
+
 Tip: add **Play Text** as a fallback command (Raycast Settings → Launcher → Fallback Commands). Then any text you
 type in Raycast's root search can go straight to your speakers.
 
