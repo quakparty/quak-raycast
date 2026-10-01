@@ -27,7 +27,7 @@ export function useWorkspace(): WorkspaceChoice {
   const multiple = slots.length > 1;
   const [slot, setSlot] = useState(activeSlot);
   const lookup = useCachedPromise(async (list: number[]) => (await listWorkspaces(list)).workspaces, [slots], {
-    execute: multiple,
+    // also with one key, for the name in the actions; cached, so only the first run asks
     // the fallback names stay; each list reports a bad key itself
     onError: () => undefined,
   });
@@ -65,10 +65,11 @@ export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
   );
 }
 
-// The actions every list offers at the end: switch the workspace (more than one key) and open the preferences
+// The actions every list offers at the end, under the active workspace's name: switch the workspace (more than one
+// key) and open the preferences
 export function ExtensionActions({ choice }: { choice: WorkspaceChoice }) {
   return (
-    <ActionPanel.Section>
+    <ActionPanel.Section title={choice.active.name}>
       <SwitchWorkspaceAction choice={choice} />
       <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
     </ActionPanel.Section>
