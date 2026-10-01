@@ -9,6 +9,8 @@ import { quak } from "../lib/quak";
 import { activeSlot, configuredSlots } from "../lib/slots";
 import { cachedWorkspace, slotName } from "../lib/workspaces";
 import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
+import { startPreview, togglePreview, usePreview } from "../lib/preview";
+import { PREVIEW_SHORTCUT } from "./preview-action";
 
 // The empty choice of a dropdown: send nothing, the workspace's default applies
 const DEFAULT = "default";
@@ -45,6 +47,9 @@ function parseVolume(raw: string): number | undefined | null {
   const volume = Number(value);
   return Number.isInteger(volume) && volume >= 1 && volume <= 100 ? volume : null;
 }
+
+// The form previews one thing at a time, whatever its fields say now
+const PREVIEW_KEY = "form";
 
 const TITLES: Record<PlaySource["kind"], string> = {
   text: "Play Text",
@@ -112,6 +117,10 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   const isText = source.kind === "text";
   // Play Text and Talk to Speakers close Raycast like a plain Enter, sounds and clips go back to their list
   const closes = source.kind === "text" || source.kind === "talk";
+  // talk is sent once, a preview would send the recording twice
+  const canPreview = source.kind !== "talk";
+  const preview = usePreview();
+  const isPreviewing = preview === PREVIEW_KEY;
 
   const speakers = useCachedPromise(async (slot: number) => (await quak(slot).speakers.list()).data, [slot], {
     onError: (error) => showError(error, "Could not load the speakers"),
@@ -184,6 +193,15 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
     if (played && !closes) pop();
   }
 
+  // Previews exactly what the form shows, without saving; again stops it
+  function previewForm(values: Values) {
+    return togglePreview(PREVIEW_KEY, async () => {
+      const input = read(values, true);
+      if (!input) return;
+      await startPreview(PREVIEW_KEY, isText ? { kind: "text", text: input.text } : source, input.options, slot);
+    });
+  }
+
   async function saveOnly(values: Values) {
     const input = read(values, false);
     if (!input) return;
@@ -240,6 +258,14 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
             shortcut={Keyboard.Shortcut.Common.Save}
             onSubmit={saveOnly}
           />
+          {canPreview && (
+            <Action.SubmitForm
+              title={isPreviewing ? "Stop Preview" : "Preview"}
+              icon={isPreviewing ? Icon.Stop : Icon.Headphones}
+              shortcut={PREVIEW_SHORTCUT}
+              onSubmit={previewForm}
+            />
+          )}
           {saved && (
             <Action
               title="Reset to Workspace Defaults"

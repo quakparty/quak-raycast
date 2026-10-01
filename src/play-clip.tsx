@@ -2,12 +2,14 @@ import { Action, ActionPanel, Icon, LaunchProps, List } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { PreviewAction } from "./components/preview-action";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
+import { usePreview } from "./lib/preview";
 import { quak } from "./lib/quak";
 
 // The workspace's clips; the API has no search for them, so Raycast filters by name and slug
@@ -16,6 +18,7 @@ export default function Command(props: LaunchProps) {
   const choice = useWorkspace();
   // own defaults for clips in this workspace: Enter's title says so
   const defaults = useDefaults("clip", choice.slot);
+  const preview = usePreview();
   const clips = useCachedPromise(async (slot: number) => (await quak(slot).clips.list()).data, [choice.slot], {
     onError: (error) => showError(error, "Could not load clips"),
   });
@@ -46,6 +49,7 @@ export default function Command(props: LaunchProps) {
                   icon={Icon.Gear}
                   target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
                 />
+                <PreviewAction source={source} slot={choice.slot} running={preview} />
                 <CreateQuicklinkAction
                   kind="clip"
                   slug={clip.slug}

@@ -3,12 +3,14 @@ import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { PreviewAction } from "./components/preview-action";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
+import { usePreview } from "./lib/preview";
 import { quak } from "./lib/quak";
 
 const ALL_TAGS = "all";
@@ -20,6 +22,7 @@ export default function Command(props: LaunchProps) {
   const choice = useWorkspace();
   // own defaults for sounds in this workspace: Enter's title says so
   const defaults = useDefaults("sound", choice.slot);
+  const preview = usePreview();
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
@@ -74,6 +77,7 @@ export default function Command(props: LaunchProps) {
                   icon={Icon.Gear}
                   target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
                 />
+                <PreviewAction source={source} slot={choice.slot} running={preview} />
                 <CreateQuicklinkAction
                   kind="sound"
                   slug={sound.slug}

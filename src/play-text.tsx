@@ -1,10 +1,12 @@
 import { Action, ActionPanel, Color, Icon, LaunchProps, List } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { PreviewAction } from "./components/preview-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { useLimits } from "./lib/limits";
 import { playWithDefaults } from "./lib/play";
+import { usePreview } from "./lib/preview";
 
 // The search bar is the text: Enter says it with your defaults, ⌘↵ opens the options.
 // With an argument from root search (or as fallback command) it says the text right away.
@@ -17,6 +19,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const maxCharacters = useLimits(choice.slot).textCharacters;
   // own defaults for texts: Enter's title says so
   const defaults = useDefaults("text", choice.slot);
+  const preview = usePreview();
 
   useEffect(() => {
     if (!initial || started.current) return;
@@ -62,6 +65,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
                   <PlayOptionsForm source={{ kind: "text", text: trimmed }} onDefaultsChange={defaults.revalidate} />
                 }
               />
+              <PreviewAction source={{ kind: "text", text: trimmed }} slot={choice.slot} running={preview} />
               <ExtensionActions choice={choice} />
             </ActionPanel>
           }
