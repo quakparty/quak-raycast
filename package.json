@@ -147,7 +147,7 @@
     }
   ],
   "dependencies": {
-    "@quak/js": "0.9.2",
+    "@quak/js": "0.9.6",
     "@raycast/api": "2.5.3",
     "@raycast/utils": "2.3.2"
   },
