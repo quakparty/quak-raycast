@@ -3,8 +3,8 @@ import type { PlaySource } from "../lib/play";
 import { previewWithDefaults, togglePreview } from "../lib/preview";
 
 export const PREVIEW_SHORTCUT: Keyboard.Shortcut = {
-  macOS: { modifiers: ["cmd"], key: "p" },
-  Windows: { modifiers: ["ctrl"], key: "p" },
+  macOS: { modifiers: ["cmd"], key: "y" },
+  Windows: { modifiers: ["ctrl"], key: "y" },
 };
 
 // What a list item previews, for "Stop Preview" on the one that runs

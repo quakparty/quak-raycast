@@ -23,7 +23,7 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
 Everything you leave out comes from your workspace's defaults on quak.party. The options form remembers your last
 choices, or starts from your defaults when you saved some. Errors from Quak (speaker offline, out of credits etc.) show as a toast, plays during quiet hours are skipped.
 
-`Preview` (⌘P, Ctrl+P on Windows) in Play Text, Play Sound, Play Clip and the options form plays it on this computer instead of the speakers, with the same options; press it again to stop.
+`Preview` (⌘Y, Ctrl+Y on Windows) in Play Text, Play Sound, Play Clip and the options form plays it on this computer instead of the speakers, with the same options; press it again to stop.
 
 ## Your defaults
 
