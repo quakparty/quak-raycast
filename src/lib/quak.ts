@@ -1,4 +1,4 @@
-import { DEFAULT_BASE_URL, Quak } from "@quak/js";
+import { Quak } from "@quak/js";
 import pkg from "../../package.json";
 import { KeyFormatError } from "./errors";
 import { activeSlot, keyField, keyFieldTitle } from "./slots";
@@ -12,9 +12,6 @@ export function apiKey(slot = activeSlot()) {
   if (!key.startsWith(KEY_PREFIX)) throw new KeyFormatError(slot === 0 ? undefined : keyFieldTitle(slot));
   return key;
 }
-
-// The live status of plays (docs/plays.md#live-status in quak-api)
-export const WATCH_URL = `${DEFAULT_BASE_URL.replace(/^http/, "ws")}/v1/plays/watch`;
 
 // A client for a slot (the active workspace by default); the API shows plays from here as "via raycast"
 export function quak(slot = activeSlot()) {

@@ -1,51 +1,30 @@
-import type { Play } from "@quak/js";
+import type { Play, Watch } from "@quak/js";
 import { useEffect, useState } from "react";
-import { apiKey, WATCH_URL } from "./quak";
-
-const RECONNECT_MS = 3000;
-
-type Message = { type: "ready" } | { type: "play"; data: Play } | { type: "ping" } | { type: "error"; code: string };
+import { quak } from "./quak";
 
 // Every change of a play as it happens, from the API's WebSocket; `connected` tells when to fall back to polling.
-// A new slot (another workspace) starts over with its own connection.
+// A new slot (another workspace) starts over with its own connection. The client reconnects by itself, but not after
+// a rejected key.
 export function useLivePlays(slot: number) {
   const [plays, setPlays] = useState<Record<string, Play>>({});
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    let socket: WebSocket | undefined;
-    let retry: ReturnType<typeof setTimeout> | undefined;
-    let closed = false;
     setPlays({});
     setConnected(false);
-
-    function connect() {
-      let key: string;
-      try {
-        key = apiKey(slot);
-      } catch {
-        return; // the list itself reports the key
-      }
-      socket = new WebSocket(WATCH_URL);
-      socket.onopen = () => socket?.send(JSON.stringify({ type: "auth", apiKey: key }));
-      socket.onmessage = (event) => {
-        const message = JSON.parse(String(event.data)) as Message;
-        if (message.type === "ready") setConnected(true);
-        if (message.type === "play") setPlays((current) => ({ ...current, [message.data.id]: message.data }));
-      };
-      socket.onclose = (event) => {
-        setConnected(false);
-        // 4001: key rejected, 4401: ticket rejected; no point in trying again
-        if (!closed && event.code !== 4001 && event.code !== 4401) retry = setTimeout(connect, RECONNECT_MS);
-      };
+    let watch: Watch;
+    try {
+      watch = quak(slot).watch({
+        onReady: () => setConnected(true),
+        onPlay: (play) => setPlays((current) => ({ ...current, [play.id]: play })),
+        onClose: () => setConnected(false),
+        // the list reports a rejected key with its own request
+        onError: () => undefined,
+      });
+    } catch {
+      return; // a malformed key; the list itself reports it
     }
-
-    connect();
-    return () => {
-      closed = true;
-      clearTimeout(retry);
-      socket?.close();
-    };
+    return () => watch.close();
   }, [slot]);
 
   return { plays, connected };
