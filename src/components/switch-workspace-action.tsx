@@ -69,7 +69,7 @@ export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
 // key) and open the preferences
 export function ExtensionActions({ choice }: { choice: WorkspaceChoice }) {
   return (
-    <ActionPanel.Section title={choice.active.name}>
+    <ActionPanel.Section title={`Workspace: ${choice.active.name}`}>
       <SwitchWorkspaceAction choice={choice} />
       <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
     </ActionPanel.Section>
