@@ -22,7 +22,7 @@ export type PlayOptions = {
   ambience?: string;
 };
 
-type Common = Pick<PlayTextParams, "to" | "volume" | "effect" | "ambience">;
+type Common = Pick<PlayTextParams, "to" | "volume" | "effect" | "ambience" | "preview">;
 
 // Only the fields the user set; sounds and clips take effects only when the server processes them
 function toParams(source: PlaySource, options: PlayOptions): Common & { voice?: string; process?: boolean } {
@@ -45,10 +45,17 @@ function toParams(source: PlaySource, options: PlayOptions): Common & { voice?: 
   return params;
 }
 
-// slot: the workspace's key, the active one by default (a quicklink brings its own)
-export async function sendPlay(source: PlaySource, options: PlayOptions = {}, slot?: number): Promise<Play> {
+// slot: the workspace's key, the active one by default (a quicklink brings its own). preview: only make the audio
+// (audioUrl), nothing plays on Sonos.
+export async function sendPlay(
+  source: PlaySource,
+  options: PlayOptions = {},
+  slot?: number,
+  preview = false,
+): Promise<Play> {
   const client = quak(slot);
   const params = toParams(source, options);
+  if (preview) params.preview = true;
   switch (source.kind) {
     case "text":
       return (await client.play.text({ ...params, text: source.text })).data;
