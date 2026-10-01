@@ -16,7 +16,7 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
 - **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Sound Quicklink` (⌘⇧L)
   saves a quicklink that plays this sound right away with your defaults (see below); give it an alias or a hotkey.
 - **Play Clip**: play one of your workspace's clips. `Create Clip Quicklink` (⌘⇧L) works like in Play Sound.
-- **Stop Playback**: stop everything that plays on all speakers of your workspace.
+- **Stop Announcements**: stop everything that plays on all speakers of your workspace.
 - **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it
   runs, save it as a clip or copy its text.
 
@@ -43,7 +43,7 @@ preferences.
 Each key belongs to one workspace. For a second or third workspace, add its key as **Second Workspace** or **Third
 Workspace**. Play Text, Play Sound, Play Clip and History then have `Switch Workspace` in their actions (⌘⇧W, Ctrl+Shift+W
 on Windows), also with an empty list, and show the active workspace in the search bar's placeholder. The choice applies
-to all commands, including Talk to Speakers, Play Selected Text and Stop Playback, until you switch again; their
+to all commands, including Talk to Speakers, Play Selected Text and Stop Announcements, until you switch again; their
 messages name the workspace. If its key is removed, the first key applies. A quicklink made with more than one key
 plays in the workspace it was made in. With a single key nothing changes.
 

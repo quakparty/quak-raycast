@@ -96,11 +96,13 @@
     },
     {
       "name": "stop",
-      "title": "Stop Playback",
+      "title": "Stop Announcements",
       "subtitle": "Quak",
-      "description": "Stop everything that plays on your speakers.",
+      "description": "Stops announcements, sounds and clips on all speakers. Music keeps playing.",
       "keywords": [
         "sonos",
+        "stop",
+        "stop playback",
         "silence",
         "quiet"
       ],

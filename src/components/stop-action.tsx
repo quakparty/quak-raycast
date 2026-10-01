@@ -13,5 +13,5 @@ export const STOP_ALL_SHORTCUT: Keyboard.Shortcut = {
 
 // Stops everything, like the Stop command, without leaving the list
 export function StopAction({ shortcut = STOP_SHORTCUT }: { shortcut?: Keyboard.Shortcut }) {
-  return <Action title="Stop All Speakers" icon={Icon.Stop} shortcut={shortcut} onAction={stopAllWithToast} />;
+  return <Action title="Stop All Announcements" icon={Icon.Stop} shortcut={shortcut} onAction={stopAllWithToast} />;
 }
