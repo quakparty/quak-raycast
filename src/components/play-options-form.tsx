@@ -286,13 +286,8 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
       {/* the fields show the values; the header only says where they come from */}
       <Form.Description
         title="Your Defaults"
-        text={
-          saved
-            ? `Saved for ${KIND_NAMES[kind]}${workspaceIn(slot)}. Empty fields and “Workspace default” use the workspace's. Reset in ⌘K.`
-            : `None for ${KIND_NAMES[kind]}${workspaceIn(slot)} yet, so the workspace's apply. ⌘S saves these options as yours.`
-        }
+        text={saved ? "Saved for this command. Reset in ⌘K." : "None yet. ⌘S saves these options."}
       />
-      <Form.Separator />
       {source.kind === "text" ? (
         <Form.TextArea
           id="text"
