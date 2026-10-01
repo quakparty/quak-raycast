@@ -5,10 +5,10 @@ import { QuakError } from "@quak/js";
 // Where people make an API key (Raycast cannot show links on its preferences screen)
 export const KEYS_URL = "https://quak.party/app/settings/keys";
 
-// The key in the preferences does not look like a Quak key
+// The key in the preferences does not look like a Quak key; field names the preference for the second and third key
 export class KeyFormatError extends Error {
-  constructor() {
-    super("This is not a Quak API key. Paste the whole key, it begins with qk_key_.");
+  constructor(field?: string) {
+    super(`${field ? `${field}: this` : "This"} is not a Quak API key. Paste the whole key, it begins with qk_key_.`);
   }
 }
 

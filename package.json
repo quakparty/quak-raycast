@@ -128,6 +128,22 @@
       "placeholder": "qk_key_… from quak.party",
       "type": "password",
       "required": true
+    },
+    {
+      "name": "apiKey2",
+      "title": "Second Workspace",
+      "description": "Optional: a key for another workspace; switch in the commands' dropdown",
+      "placeholder": "qk_key_… from another workspace",
+      "type": "password",
+      "required": false
+    },
+    {
+      "name": "apiKey3",
+      "title": "Third Workspace",
+      "description": "Optional: a key for another workspace; switch in the commands' dropdown",
+      "placeholder": "qk_key_… from another workspace",
+      "type": "password",
+      "required": false
     }
   ],
   "dependencies": {

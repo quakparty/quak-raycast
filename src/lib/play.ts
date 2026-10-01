@@ -42,8 +42,9 @@ function toParams(source: PlaySource, options: PlayOptions): Common & { voice?: 
   return params;
 }
 
-export async function sendPlay(source: PlaySource, options: PlayOptions = {}): Promise<Play> {
-  const client = quak();
+// slot: the workspace's key, the active one by default (a quicklink brings its own)
+export async function sendPlay(source: PlaySource, options: PlayOptions = {}, slot?: number): Promise<Play> {
+  const client = quak(slot);
   const params = toParams(source, options);
   switch (source.kind) {
     case "text":
@@ -107,6 +108,6 @@ export async function withFeedback(request: () => Promise<Play>, feedback: Feedb
   }
 }
 
-export function playWithFeedback(source: PlaySource, options: PlayOptions, feedback: Feedback) {
-  return withFeedback(() => sendPlay(source, options), feedback);
+export function playWithFeedback(source: PlaySource, options: PlayOptions, feedback: Feedback, slot?: number) {
+  return withFeedback(() => sendPlay(source, options, slot), feedback);
 }
