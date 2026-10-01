@@ -13,8 +13,9 @@ export async function stopAll(slot?: number) {
 export async function stopAllWithToast() {
   const toast = await showToast({ style: Toast.Style.Animated, title: "Stopping…" });
   try {
-    toast.title = await stopAll();
-    toast.style = Toast.Style.Success;
+    const title = await stopAll();
+    // a new toast replaces the animated one at once; changing style and title one by one can leave the spinner
+    await showToast({ style: Toast.Style.Success, title });
   } catch (error) {
     await toast.hide();
     await showError(error, "Could not stop");
