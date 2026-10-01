@@ -1,5 +1,6 @@
 import { showHUD, showToast, Toast } from "@raycast/api";
 import { readFile } from "fs/promises";
+import { loadDefaults } from "./defaults";
 import { showError } from "./errors";
 import type { Play, PlayTextParams } from "@quak/js";
 import { quak } from "./quak";
@@ -119,4 +120,16 @@ export async function withFeedback(
 
 export function playWithFeedback(source: PlaySource, options: PlayOptions, feedback: Feedback, slot?: number) {
   return withFeedback(() => sendPlay(source, options, slot), feedback, undefined, slot);
+}
+
+// A plain play (Enter, quicklinks, Play Selected Text): the extension's defaults for this type and workspace, the
+// workspace's for everything they leave out
+export function playWithDefaults(source: PlaySource, feedback: Feedback, slot?: number) {
+  const target = slot ?? activeSlot();
+  return withFeedback(
+    async () => sendPlay(source, (await loadDefaults(source.kind, target)) ?? {}, target),
+    feedback,
+    undefined,
+    target,
+  );
 }

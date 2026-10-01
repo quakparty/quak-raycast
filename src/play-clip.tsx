@@ -6,7 +6,7 @@ import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
-import { playWithFeedback } from "./lib/play";
+import { playWithDefaults } from "./lib/play";
 import { quak } from "./lib/quak";
 
 // The workspace's clips; the API has no search for them, so Raycast filters by name and slug
@@ -36,7 +36,7 @@ export default function Command(props: LaunchProps) {
                 <Action
                   title="Play Clip"
                   icon={Icon.Play}
-                  onAction={() => playWithFeedback(source, {}, "toast", choice.slot)}
+                  onAction={() => playWithDefaults(source, "toast", choice.slot)}
                 />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
                 <CreateQuicklinkAction

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { useWorkspace } from "./components/switch-workspace-action";
 import { formatClock } from "./lib/format";
-import { withFeedback, sendPlay } from "./lib/play";
+import { playWithDefaults } from "./lib/play";
 import { useLimits } from "./lib/limits";
 import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
 
@@ -30,7 +30,7 @@ export default function Command() {
   return <Talk />;
 }
 
-// Records at once: Enter stops and sends with the workspace's defaults, ⌘↵ stops and opens the options,
+// Records at once: Enter stops and sends with your defaults, ⌘↵ stops and opens the options,
 // Esc discards the recording. Stops by itself at the API's limit.
 function Talk() {
   const { push } = useNavigation();
@@ -118,12 +118,7 @@ function Talk() {
     if (!recording) return;
     setPhase("sending");
     // on success the HUD closes Raycast, on an error the recording stays for another try
-    await withFeedback(
-      () => sendPlay({ kind: "talk", path: recording.path, seconds: recording.seconds }, {}, choice.slot),
-      "hud",
-      undefined,
-      choice.slot,
-    );
+    await playWithDefaults({ kind: "talk", path: recording.path, seconds: recording.seconds }, "hud", choice.slot);
     setPhase("recorded");
   }
 

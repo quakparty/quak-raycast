@@ -2,7 +2,7 @@ import { Action, Icon, Keyboard, LaunchProps, openExtensionPreferences, showToas
 import { createDeeplink } from "@raycast/utils";
 import { useEffect, useRef, useState } from "react";
 import { showError } from "../lib/errors";
-import { playWithFeedback } from "../lib/play";
+import { playWithDefaults } from "../lib/play";
 import { configuredSlots } from "../lib/slots";
 import { cachedWorkspace, listWorkspaces, type Workspace } from "../lib/workspaces";
 
@@ -18,7 +18,7 @@ export const QUICKLINK_SHORTCUT: Keyboard.Shortcut = {
   Windows: { modifiers: ["ctrl", "shift"], key: "l" },
 };
 
-// A Raycast quicklink that plays this one sound or clip with the workspace's defaults. With more than one key it
+// A Raycast quicklink that plays this one sound or clip with your defaults. With more than one key it
 // carries the workspace (passed only then), so it plays where it was made.
 export function CreateQuicklinkAction({
   kind,
@@ -84,7 +84,7 @@ export function useQuicklinkPlay(kind: Kind, props: LaunchProps) {
     (async () => {
       const slot = workspace ? await findSlot(workspace) : undefined;
       if (workspace && slot === undefined) return;
-      await playWithFeedback({ kind, slug, name: slug }, {}, "hud", slot);
+      await playWithDefaults({ kind, slug, name: slug }, "hud", slot);
     })().finally(() => setIsPlaying(false));
   }, []);
 

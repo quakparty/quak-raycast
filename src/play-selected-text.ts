@@ -1,7 +1,7 @@
 import { getSelectedText, showToast, Toast } from "@raycast/api";
-import { playWithFeedback } from "./lib/play";
+import { playWithDefaults } from "./lib/play";
 
-// Plays the text selected in the frontmost app with the workspace's defaults, from anywhere (best with a hotkey)
+// Plays the text selected in the frontmost app with your defaults for texts (else the workspace's), from anywhere (best with a hotkey)
 export default async function Command() {
   let text: string;
   try {
@@ -17,5 +17,5 @@ export default async function Command() {
     });
     return;
   }
-  await playWithFeedback({ kind: "text", text }, {}, "hud");
+  await playWithDefaults({ kind: "text", text }, "hud");
 }
