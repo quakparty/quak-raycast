@@ -1,8 +1,8 @@
-import { Action, ActionPanel, Icon, Keyboard, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, Keyboard } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { activeSlot, configuredSlots, setActiveSlot } from "../lib/slots";
-import { listWorkspaces, slotName, type Workspace } from "../lib/workspaces";
+import { cachedWorkspace, listWorkspaces, slotName, type Workspace } from "../lib/workspaces";
 
 export const SWITCH_WORKSPACE_SHORTCUT: Keyboard.Shortcut = {
   macOS: { modifiers: ["cmd", "shift"], key: "w" },
@@ -12,9 +12,9 @@ export const SWITCH_WORKSPACE_SHORTCUT: Keyboard.Shortcut = {
 export type WorkspaceChoice = {
   // the active slot, for quak(slot) and as a dependency of the lists
   slot: number;
-  // more than one key: show the switch
+  // more than one key: show the switch and the workspace's name
   multiple: boolean;
-  // the configured workspaces by name (fallback names until the lookup answered)
+  // the configured workspaces by name (cached or fallback names until the lookup answered)
   workspaces: Workspace[];
   // the active workspace
   active: Workspace;
@@ -33,7 +33,11 @@ export function useWorkspace(): WorkspaceChoice {
   });
 
   const workspaces = slots.map(
-    (value) => lookup.data?.find((workspace) => workspace.slot === value) ?? { slot: value, name: slotName(value) },
+    (value) =>
+      lookup.data?.find((workspace) => workspace.slot === value) ?? {
+        slot: value,
+        ...(cachedWorkspace(value) ?? { name: slotName(value) }),
+      },
   );
   const select = (value: number) => {
     if (value === slot) return;
@@ -44,24 +48,7 @@ export function useWorkspace(): WorkspaceChoice {
   return { slot, multiple, workspaces, active, select };
 }
 
-// The search bar's workspace switch; nothing with a single key
-export function WorkspaceDropdown({ choice }: { choice: WorkspaceChoice }) {
-  if (!choice.multiple) return null;
-  return (
-    <List.Dropdown tooltip="Workspace" value={String(choice.slot)} onChange={(value) => choice.select(Number(value))}>
-      {choice.workspaces.map((workspace) => (
-        <List.Dropdown.Item
-          key={workspace.slot}
-          value={String(workspace.slot)}
-          title={workspace.name}
-          icon={Icon.House}
-        />
-      ))}
-    </List.Dropdown>
-  );
-}
-
-// The same as an action, where the search bar already has another dropdown (Play Sound's tags)
+// Switches the workspace for all commands, from any list's actions (also its empty view); nothing with a single key
 export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
   if (!choice.multiple) return null;
   return (
@@ -70,7 +57,7 @@ export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
         <Action
           key={workspace.slot}
           title={workspace.name}
-          icon={workspace.slot === choice.slot ? Icon.CheckCircle : Icon.Circle}
+          icon={workspace.slot === choice.slot ? Icon.Checkmark : Icon.Circle}
           onAction={() => choice.select(workspace.slot)}
         />
       ))}

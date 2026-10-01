@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
-import { SwitchWorkspaceAction, useWorkspace } from "./components/workspace-dropdown";
+import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -37,8 +37,7 @@ export default function Command(props: LaunchProps) {
       isLoading={sounds.isLoading || isPlaying}
       onSearchTextChange={setSearch}
       throttle
-      searchBarPlaceholder="Search sounds"
-      navigationTitle={choice.multiple ? `Play Sound · ${choice.active.name}` : undefined}
+      searchBarPlaceholder={choice.multiple ? `Search sounds in ${choice.active.name}…` : "Search sounds"}
       searchBarAccessory={
         <List.Dropdown tooltip="Tag" storeValue onChange={setTag}>
           <List.Dropdown.Item value={ALL_TAGS} title="All Sounds" />
@@ -62,7 +61,11 @@ export default function Command(props: LaunchProps) {
             ]}
             actions={
               <ActionPanel>
-                <Action title="Play Sound" icon={Icon.Play} onAction={() => playWithFeedback(source, {}, "toast")} />
+                <Action
+                  title="Play Sound"
+                  icon={Icon.Play}
+                  onAction={() => playWithFeedback(source, {}, "toast", choice.slot)}
+                />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
                 <CreateQuicklinkAction
                   kind="sound"
@@ -78,7 +81,19 @@ export default function Command(props: LaunchProps) {
           />
         );
       })}
-      {!sounds.isLoading && <List.EmptyView icon={Icon.Music} title="No sounds found" />}
+      {!sounds.isLoading && (
+        <List.EmptyView
+          icon={Icon.Music}
+          title="No sounds found"
+          actions={
+            choice.multiple ? (
+              <ActionPanel>
+                <SwitchWorkspaceAction choice={choice} />
+              </ActionPanel>
+            ) : undefined
+          }
+        />
+      )}
     </List>
   );
 }

@@ -4,7 +4,7 @@ import { useCachedPromise } from "@raycast/utils";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
-import { useWorkspace, WorkspaceDropdown } from "./components/workspace-dropdown";
+import { SwitchWorkspaceAction, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
 import { playWithFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
@@ -20,8 +20,7 @@ export default function Command(props: LaunchProps) {
   return (
     <List
       isLoading={clips.isLoading || isPlaying}
-      searchBarPlaceholder="Search clips"
-      searchBarAccessory={<WorkspaceDropdown choice={choice} />}
+      searchBarPlaceholder={choice.multiple ? `Search clips in ${choice.active.name}…` : "Search clips"}
     >
       {clips.data?.map((clip) => {
         const source = { kind: "clip" as const, slug: clip.slug, name: clip.name };
@@ -34,7 +33,11 @@ export default function Command(props: LaunchProps) {
             accessories={[{ text: formatSeconds(clip.length) }, { date: new Date(clip.createdAt), tooltip: "Created" }]}
             actions={
               <ActionPanel>
-                <Action title="Play Clip" icon={Icon.Play} onAction={() => playWithFeedback(source, {}, "toast")} />
+                <Action
+                  title="Play Clip"
+                  icon={Icon.Play}
+                  onAction={() => playWithFeedback(source, {}, "toast", choice.slot)}
+                />
                 <Action.Push title="Play with Options…" icon={Icon.Gear} target={<PlayOptionsForm source={source} />} />
                 <CreateQuicklinkAction
                   kind="clip"
@@ -44,6 +47,7 @@ export default function Command(props: LaunchProps) {
                 />
                 <StopAction />
                 <Action.CopyToClipboard title="Copy Slug" content={clip.slug} />
+                <SwitchWorkspaceAction choice={choice} />
               </ActionPanel>
             }
           />
@@ -54,6 +58,13 @@ export default function Command(props: LaunchProps) {
           icon={Icon.Waveform}
           title="No clips found"
           description="Save a play as a clip from the History command."
+          actions={
+            choice.multiple ? (
+              <ActionPanel>
+                <SwitchWorkspaceAction choice={choice} />
+              </ActionPanel>
+            ) : undefined
+          }
         />
       )}
     </List>
