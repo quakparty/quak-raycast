@@ -31,7 +31,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
       searchText={text}
       onSearchTextChange={setText}
       searchBarPlaceholder={
-        choice.multiple ? `What should the speakers in ${choice.active.name} say?` : "What should your speakers say?"
+        choice.multiple ? `Text for the speakers in ${choice.active.name}` : "Text for your speakers"
       }
     >
       {trimmed ? (
@@ -65,9 +65,14 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
         <List.EmptyView
           icon={Icon.SpeechBubble}
           title="Type what to say"
-          description="Enter says it with your workspace's defaults. Play with Options… is in the actions."
+          description="Type in the search bar: Enter plays it, ⌘↵ opens the options. Or press Enter to write it in the form."
           actions={
             <ActionPanel>
+              <Action.Push
+                title="Play with Options…"
+                icon={Icon.Gear}
+                target={<PlayOptionsForm source={{ kind: "text", text: "" }} />}
+              />
               <ExtensionActions choice={choice} />
             </ActionPanel>
           }

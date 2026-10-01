@@ -20,7 +20,7 @@ export default function Command(props: LaunchProps) {
   return (
     <List
       isLoading={clips.isLoading || isPlaying}
-      searchBarPlaceholder={choice.multiple ? `Search clips in ${choice.active.name}…` : "Search clips"}
+      searchBarPlaceholder={choice.multiple ? `Search clips in ${choice.active.name}` : "Search clips"}
     >
       {clips.data?.map((clip) => {
         const source = { kind: "clip" as const, slug: clip.slug, name: clip.name };

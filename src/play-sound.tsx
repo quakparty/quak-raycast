@@ -37,7 +37,7 @@ export default function Command(props: LaunchProps) {
       isLoading={sounds.isLoading || isPlaying}
       onSearchTextChange={setSearch}
       throttle
-      searchBarPlaceholder={choice.multiple ? `Search sounds in ${choice.active.name}…` : "Search sounds"}
+      searchBarPlaceholder={choice.multiple ? `Search sounds in ${choice.active.name}` : "Search sounds"}
       searchBarAccessory={
         <List.Dropdown tooltip="Tag" storeValue onChange={setTag}>
           <List.Dropdown.Item value={ALL_TAGS} title="All Sounds" />

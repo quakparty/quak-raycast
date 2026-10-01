@@ -14,6 +14,7 @@ const DEFAULT = "default";
 // The speakers' field is "to", "to2" or "to3" (one remembered choice per workspace)
 type Values = {
   [to: `to${string}`]: string[] | undefined;
+  text?: string;
   volume: string;
   voice?: string;
   effect: string;
@@ -70,6 +71,7 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
   const toField: `to${string}` = slot === 0 ? "to" : `to${slot + 1}`;
   const { pop } = useNavigation();
   const [volumeError, setVolumeError] = useState<string>();
+  const [textError, setTextError] = useState<string>();
   const isText = source.kind === "text";
   // Play Text and Talk to Speakers close Raycast like a plain Enter, sounds and clips go back to their list
   const closes = source.kind === "text" || source.kind === "talk";
@@ -86,6 +88,12 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
   });
 
   async function submit(values: Values) {
+    // a text play edits its text here too (also the way to write one when the search bar was empty)
+    const text = isText ? (values.text ?? "").trim() : "";
+    if (isText && !text) {
+      setTextError("Type what to say");
+      return;
+    }
     const volume = parseVolume(values.volume);
     if (volume === null) {
       setVolumeError("1 to 100, or empty");
@@ -99,7 +107,12 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
       effect: pick(values.effect),
       ambience: pick(values.ambience),
     };
-    const played = await playWithFeedback(source, options, closes ? "hud" : "toast", slot);
+    const played = await playWithFeedback(
+      isText ? { kind: "text", text } : source,
+      options,
+      closes ? "hud" : "toast",
+      slot,
+    );
     if (played && !closes) pop();
   }
 
@@ -118,7 +131,19 @@ export function PlayOptionsForm({ source }: { source: PlaySource }) {
         </ActionPanel>
       }
     >
-      <Form.Description title={described.title} text={described.text} />
+      {source.kind === "text" ? (
+        <Form.TextArea
+          id="text"
+          title="Text"
+          placeholder="What should your speakers say?"
+          defaultValue={source.text}
+          error={textError}
+          onChange={() => setTextError(undefined)}
+          autoFocus={!source.text}
+        />
+      ) : (
+        <Form.Description title={described.title} text={described.text} />
+      )}
       {/* rendered once the choices are there, so the stored values find their items */}
       {speakers.data && (
         <Form.TagPicker id={toField} title="Speakers" info="Empty: the workspace's default speakers" storeValue>

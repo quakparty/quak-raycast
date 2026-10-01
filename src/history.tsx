@@ -249,7 +249,7 @@ export default function Command() {
       isLoading={plays.isLoading}
       isShowingDetail
       pagination={plays.pagination}
-      searchBarPlaceholder={choice.multiple ? `Filter plays in ${choice.active.name}…` : "Filter plays"}
+      searchBarPlaceholder={choice.multiple ? `Filter plays in ${choice.active.name}` : "Filter plays"}
     >
       {shown.map((play) => (
         <List.Item
