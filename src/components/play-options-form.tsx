@@ -242,7 +242,8 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
 
   return (
     <Form
-      navigationTitle="Play with Options"
+      // only fields to answer; what plays sits in the title (allowed in a pushed screen)
+      navigationTitle={source.kind === "text" ? "Play with Options" : `${described.title}: ${described.text}`}
       isLoading={initial.isLoading || speakers.isLoading || effects.isLoading || (isText && voices.isLoading)}
       actions={
         <ActionPanel>
@@ -271,17 +272,13 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
               title="Reset to Workspace Defaults"
               icon={Icon.ArrowCounterClockwise}
               style={Action.Style.Destructive}
+              shortcut={Keyboard.Shortcut.Common.Remove}
               onAction={reset}
             />
           )}
         </ActionPanel>
       }
     >
-      {/* the fields show the values; the header only says where they come from */}
-      <Form.Description
-        title="Your Defaults"
-        text={saved ? "Saved for this command. Reset in ⌘K." : "None yet. ⌘S saves these options."}
-      />
       {source.kind === "text" ? (
         <Form.TextArea
           id="text"
@@ -292,9 +289,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
           onChange={() => setTextError(undefined)}
           autoFocus={!source.text}
         />
-      ) : (
-        <Form.Description title={described.title} text={described.text} />
-      )}
+      ) : null}
       {/* rendered once the choices are there, so the stored values find their items */}
       {ready && speakers.data && (
         <Form.TagPicker
