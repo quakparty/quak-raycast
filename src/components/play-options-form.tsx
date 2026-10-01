@@ -395,6 +395,10 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
       {(source.kind === "sound" || source.kind === "clip") && (
         <Form.Description text="With a voice effect or ambience, the workspace's intro and outro apply too." />
       )}
+      {/* the save actions sit in ⌘K, so the form says they exist */}
+      <Form.Description
+        text={`⌘S saves these options as your defaults for ${KIND_NAMES[kind]}${workspaceIn(slot)}, then Enter in the list uses them. More in ⌘K.`}
+      />
     </Form>
   );
 }
