@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Detail, Icon, open, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
+import { useWorkspace } from "./components/switch-workspace-action";
 import { formatClock } from "./lib/format";
 import { withFeedback, sendPlay } from "./lib/play";
 import { useLimits } from "./lib/limits";
@@ -33,6 +34,8 @@ export default function Command() {
 // Esc discards the recording. Stops by itself at the API's limit.
 function Talk() {
   const { push } = useNavigation();
+  // no switch here, it records right away; with more than one key the text names the active workspace
+  const choice = useWorkspace();
   const recorder = useRef<Recorder>(null);
   const [phase, setPhase] = useState<Phase>("starting");
   // fixed at the start: the cached limit, or the default on the very first run
@@ -115,7 +118,12 @@ function Talk() {
     if (!recording) return;
     setPhase("sending");
     // on success the HUD closes Raycast, on an error the recording stays for another try
-    await withFeedback(() => sendPlay({ kind: "talk", path: recording.path, seconds: recording.seconds }), "hud");
+    await withFeedback(
+      () => sendPlay({ kind: "talk", path: recording.path, seconds: recording.seconds }, {}, choice.slot),
+      "hud",
+      undefined,
+      choice.slot,
+    );
     setPhase("recorded");
   }
 
@@ -132,7 +140,7 @@ function Talk() {
   return (
     <Detail
       isLoading={phase === "starting" || phase === "sending"}
-      markdown={markdown(phase, elapsed, left, maxSeconds, error)}
+      markdown={markdown(phase, elapsed, left, maxSeconds, choice.multiple ? choice.active.name : undefined, error)}
       actions={
         phase === "recording" || phase === "recorded" ? (
           <ActionPanel>
@@ -154,8 +162,11 @@ function markdown(
   elapsed: number,
   left: number,
   maxSeconds: number,
+  workspace?: string,
   error?: { title: string; message: string },
 ) {
+  // " in Name" with more than one key
+  const where = workspace ? ` in **${workspace}**` : "";
   const keys = "**Enter** sends it with your workspace's defaults, **⌘↵** opens the options, **Esc** discards it.";
   switch (phase) {
     case "starting":
@@ -163,13 +174,13 @@ function markdown(
     case "recording":
       return [
         `# ● ${formatClock(elapsed)}`,
-        "Speak now. " + keys,
+        `Speak now${where}. ` + keys,
         left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(maxSeconds)}.`,
       ].join("\n\n");
     case "recorded":
-      return [`# ${formatClock(elapsed)}`, "Recorded. " + keys].join("\n\n");
+      return [`# ${formatClock(elapsed)}`, `Recorded${where}. ` + keys].join("\n\n");
     case "sending":
-      return `# ${formatClock(elapsed)}\n\nSending…`;
+      return `# ${formatClock(elapsed)}\n\nSending${where}…`;
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
