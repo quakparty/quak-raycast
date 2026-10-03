@@ -219,7 +219,7 @@ function markdown(
     case "sending":
       return lines(`# ${formatClock(elapsed)}`, "Sending…", where);
     case "discarded":
-      return lines("# Discarded", "Raycast was closed while recording.", "`↵` Record again   ·   `Esc` Leave");
+      return lines("# Discarded", "The window was hidden while recording, so nothing was sent.", "`↵` Record again   ·   `Esc` Leave");
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
