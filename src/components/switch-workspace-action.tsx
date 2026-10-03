@@ -4,6 +4,9 @@ import { useState } from "react";
 import { activeSlot, configuredSlots, setActiveSlot } from "../lib/slots";
 import { cachedWorkspace, listWorkspaces, slotName, type Workspace } from "../lib/workspaces";
 
+// The web app, for everything the extension leaves out
+const APP_URL = "https://quak.party/app";
+
 export const SWITCH_WORKSPACE_SHORTCUT: Keyboard.Shortcut = {
   macOS: { modifiers: ["cmd", "shift"], key: "w" },
   Windows: { modifiers: ["ctrl", "shift"], key: "w" },
@@ -66,11 +69,12 @@ export function SwitchWorkspaceAction({ choice }: { choice: WorkspaceChoice }) {
 }
 
 // The actions every list offers at the end, under the active workspace's name: switch the workspace (more than one
-// key) and open the preferences
+// key), open Quak in the browser and open the preferences
 export function ExtensionActions({ choice }: { choice: WorkspaceChoice }) {
   return (
     <ActionPanel.Section title={`Workspace: ${choice.active.name}`}>
       <SwitchWorkspaceAction choice={choice} />
+      <Action.OpenInBrowser title="Open Quak in Browser" url={APP_URL} />
       <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
     </ActionPanel.Section>
   );
