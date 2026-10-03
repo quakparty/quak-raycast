@@ -12,6 +12,11 @@ import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
 import { startPreview, togglePreview, usePreview } from "../lib/preview";
 import { PREVIEW_SHORTCUT } from "./preview-action";
 
+// The shortcuts of "Save as Your Defaults" (Common.Save) and "Reset to Workspace Defaults" (Common.Remove), for the
+// hint below the fields
+const SAVE_KEYS = process.platform === "win32" ? "Ctrl+S" : "⌘S";
+const RESET_KEYS = process.platform === "win32" ? "Ctrl+D" : "⌃X";
+
 // The empty choice of a dropdown: send nothing, the workspace's default applies
 const DEFAULT = "default";
 
@@ -386,6 +391,15 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
             />
           ))}
         </Form.Dropdown>
+      )}
+      {ready && (
+        <Form.Description
+          text={
+            saved
+              ? `${SAVE_KEYS} updates your defaults · ${RESET_KEYS} resets them`
+              : `${SAVE_KEYS} saves these options as your defaults`
+          }
+        />
       )}
     </Form>
   );
