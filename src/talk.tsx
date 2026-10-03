@@ -190,15 +190,17 @@ function markdown(
     case "starting":
       return "## Starting the microphone…\n\nThe first time, macOS asks whether Raycast may use the microphone.";
     case "recording":
+      // red dot and a heading from the first frame of the recording, the clock below
       return [
-        `# ● ${formatClock(elapsed)}`,
+        "# 🔴 Recording…",
+        `## ${formatClock(elapsed)}`,
         `Speak now${where}. ` + keys,
         left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(maxSeconds)}.`,
       ].join("\n\n");
     case "recorded":
-      return [`# ${formatClock(elapsed)}`, `Recorded${where}. ` + keys].join("\n\n");
+      return ["# Recorded", `## ${formatClock(elapsed)}`, `Ready to send${where}. ` + keys].join("\n\n");
     case "sending":
-      return `# ${formatClock(elapsed)}\n\nSending${where}…`;
+      return ["# Sending…", `## ${formatClock(elapsed)}`, ...(where ? [`To your speakers${where}.`] : [])].join("\n\n");
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
