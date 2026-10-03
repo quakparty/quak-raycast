@@ -19,8 +19,8 @@ Raycast extension "Quak for Sonos" for [Quak](https://quak.party), published thr
   build of Talk to Speakers shares `swift/.raycast-swift-build` and locks.
 - **Store rules:** MIT, US English, no `navigationTitle` in root commands, no settings commands (configuration goes
   into the preferences), first action = Enter, second = ⌘↵. ⌘P is Raycast's shortcut for the search bar dropdown.
-- **Product decisions:** few commands; no browser fallbacks for features; no credit hints (only the API's error when
-  credits run out); workspace defaults apply unless the user saved own defaults per command in the options form;
+- **Product decisions:** few commands; no browser fallbacks for features; credits show up only after a play below 20 (`LOW_CREDITS` in
+  `src/lib/play.ts`) and as "Out of credits" when they run out; workspace defaults apply unless the user saved own defaults per command in the options form;
   limits, `canReplay` and `canSave` come from the API, never hardcoded.
 - **Keys** live only in the preferences (up to three, one per workspace), never in links, logs or LocalStorage.
 - Commits: `<scope>: <action>`, English, small steps.

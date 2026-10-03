@@ -8,7 +8,7 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   speakers, volume, voice, voice effect and ambience. With a text argument from root search it plays right away.
 - **Play Selected Text**: plays the text you selected in any app with your defaults. Give it a hotkey to
   read out anything, anywhere.
-- **Talk to Speakers** (macOS only): records from the microphone as soon as it opens and shows the elapsed time. Enter stops and
+- **Talk to Speakers** (macOS only): records from the microphone as soon as it opens, with a red "Recording…" heading above the elapsed time. Enter stops and
   plays the recording with your defaults, ⌘↵ stops and opens the options (speakers, volume, voice effect,
   ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
   macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
@@ -21,7 +21,11 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   runs, save it as a clip or copy its text.
 
 Everything you leave out comes from your workspace's defaults on quak.party. The options form remembers your last
-choices, or starts from your defaults when you saved some. Errors from Quak (speaker offline, out of credits etc.) show as a toast, plays during quiet hours are skipped.
+choices, or starts from your defaults when you saved some. Errors from Quak (speaker offline etc.) show as a toast, plays during quiet hours are skipped.
+When fewer than 20 credits are left, the message after a play says how many ("Only 12 credits left"); when they
+run out, the play fails with "Out of credits".
+
+Every list's actions (⌘K) end with `Open Quak in Browser` (quak.party/app) and `Open Extension Preferences`.
 
 `Preview` (⌘Y, Ctrl+Y on Windows) in Play Text, Play Sound, Play Clip and the options form plays it on this computer instead of the speakers, with the same options; press it again to stop.
 
@@ -31,7 +35,7 @@ In the options form, `Play and Save as Your Defaults` (⌘⇧↵) or `Save as Yo
 extension's own defaults. There is one set each for texts (Play Text and Play Selected Text), talk, sounds and clips,
 and one per workspace, since the speakers differ. Enter in these commands and quicklinks then play with your
 defaults; whatever a set leaves out (a field on "Workspace default") still comes from the workspace. The options
-form starts from your defaults and lists them at the top, and the Enter action reads "… with Your Defaults" while a
+form starts from your defaults, a line below the fields names the shortcuts to save (⌘S) or reset (⌃X) them, and the Enter action reads "… with Your Defaults" while a
 set is active. `Reset to Workspace Defaults` in the options form removes the set. Your defaults stay on this
 computer (Raycast's local storage), never with your key.
 

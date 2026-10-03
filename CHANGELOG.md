@@ -10,4 +10,6 @@
 - Preview (⌘Y): hear a text, sound or clip on this computer first, with the same options, before it plays on the speakers.
 - History: recent plays with replay, stop, save as clip and copy text.
 - Your defaults: save the options form's choices as the extension's own defaults per play type (texts, talk, sounds, clips) and workspace; Enter and quicklinks use them, reset them in the options form.
+- Low credits: below 20 the message after a play says how many are left; "Out of credits" when they run out.
+- `Open Quak in Browser` in every list's actions.
 - Up to three workspaces, one key each: switch with `Switch Workspace` (⌘⇧W) in any list's actions; quicklinks play where they were made.
