@@ -10,7 +10,7 @@ import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/re
 
 const PRIVACY_URL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
 
-type Phase = "starting" | "recording" | "recorded" | "sending" | "failed";
+type Phase = "starting" | "recording" | "recorded" | "sending" | "discarded" | "failed";
 
 const ERRORS = {
   MICROPHONE_DENIED: {
@@ -32,7 +32,8 @@ export default function Command() {
 }
 
 // Records at once: Enter stops and sends with your defaults, ⌘↵ stops and opens the options,
-// Esc discards the recording. Stops by itself at the API's limit.
+// Esc discards the recording. Stops by itself at the API's limit, and discards the recording when Raycast's window
+// closes (Raycast keeps the command mounted in the background, the microphone must not go on).
 function Talk() {
   const { push } = useNavigation();
   // no switch here, it records right away; with more than one key the text names the active workspace
@@ -49,6 +50,8 @@ function Talk() {
   // the length once the recording stopped
   const [recorded, setRecorded] = useState<number>();
   const [error, setError] = useState<(typeof ERRORS)[keyof typeof ERRORS]>();
+  // a new value starts a new recording ("Record Again")
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const current = startRecording(maxSeconds);
@@ -64,7 +67,9 @@ function Talk() {
     current.result.then(
       (recording) => {
         clearInterval(timer);
-        if (recording.reason === "limit") {
+        if (recording.reason === "hidden") {
+          setPhase("discarded");
+        } else if (recording.reason === "limit") {
           setRecorded(recording.seconds);
           setPhase("recorded");
           showToast({
@@ -100,7 +105,15 @@ function Talk() {
       clearInterval(timer);
       current.dispose();
     };
-  }, []);
+  }, [attempt]);
+
+  function recordAgain() {
+    setStartedAt(undefined);
+    setRecorded(undefined);
+    setError(undefined);
+    setPhase("starting");
+    setAttempt((value) => value + 1);
+  }
 
   // Stops the helper and waits for the file; null when nothing was kept
   async function finish(): Promise<Recording | null> {
@@ -163,6 +176,10 @@ function Talk() {
             />
             <Action title="Talk with Options…" icon={Icon.Gear} onAction={sendWithOptions} />
           </ActionPanel>
+        ) : phase === "discarded" ? (
+          <ActionPanel>
+            <Action title="Record Again" icon={Icon.Microphone} onAction={recordAgain} />
+          </ActionPanel>
         ) : phase === "failed" && error === ERRORS.MICROPHONE_DENIED ? (
           <ActionPanel>
             <Action title="Open Privacy Settings" icon={Icon.Lock} onAction={() => open(PRIVACY_URL)} />
@@ -201,6 +218,8 @@ function markdown(
       return lines(`# ${formatClock(elapsed)}`, "Recorded", where, keys);
     case "sending":
       return lines(`# ${formatClock(elapsed)}`, "Sending…", where);
+    case "discarded":
+      return lines("# Discarded", "Raycast was closed while recording.", "`↵` Record again   ·   `Esc` Leave");
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
