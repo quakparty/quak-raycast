@@ -182,25 +182,25 @@ function markdown(
   workspace?: string,
   error?: { title: string; message: string },
 ) {
-  // " in Name" with more than one key
-  const where = workspace ? ` in **${workspace}**` : "";
-  const defaults = own ? "your defaults" : "your workspace's defaults";
-  const keys = `**Enter** sends it with ${defaults}, **⌘↵** opens the options, **Esc** discards it.`;
+  // short and scannable: state and clock as the heading, the keys as one line of key caps
+  const where = workspace ? `To **${workspace}**` : "";
+  const enter = own ? "Send with your defaults" : "Send";
+  const keys = `\`↵\` ${enter}   ·   \`⌘↵\` Options   ·   \`Esc\` Discard`;
+  const lines = (...items: string[]) => items.filter(Boolean).join("\n\n");
   switch (phase) {
     case "starting":
-      return "## Starting the microphone…\n\nThe first time, macOS asks whether Raycast may use the microphone.";
+      return lines("# Starting the microphone…", "The first time, macOS asks whether Raycast may use it.");
     case "recording":
-      // red dot and a heading from the first frame of the recording, the clock below
-      return [
-        "# 🔴 Recording…",
-        `## ${formatClock(elapsed)}`,
-        `Speak now${where}. ` + keys,
-        left <= 10 ? `**Stops in ${Math.ceil(left)} s.**` : `Stops by itself at ${formatClock(maxSeconds)}.`,
-      ].join("\n\n");
+      return lines(
+        `# 🔴 ${formatClock(elapsed)}`,
+        left <= 10 ? `**Stops in ${Math.ceil(left)} s**` : `Recording · stops at ${formatClock(maxSeconds)}`,
+        where,
+        keys,
+      );
     case "recorded":
-      return ["# Recorded", `## ${formatClock(elapsed)}`, `Ready to send${where}. ` + keys].join("\n\n");
+      return lines(`# ${formatClock(elapsed)}`, "Recorded", where, keys);
     case "sending":
-      return ["# Sending…", `## ${formatClock(elapsed)}`, ...(where ? [`To your speakers${where}.`] : [])].join("\n\n");
+      return lines(`# ${formatClock(elapsed)}`, "Sending…", where);
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
