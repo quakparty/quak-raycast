@@ -1,4 +1,15 @@
-import { Action, ActionPanel, Detail, Icon, open, showToast, Toast, useNavigation } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Detail,
+  Icon,
+  open,
+  popToRoot,
+  showHUD,
+  showToast,
+  Toast,
+  useNavigation,
+} from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { useWorkspace } from "./components/switch-workspace-action";
@@ -10,7 +21,7 @@ import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/re
 
 const PRIVACY_URL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
 
-type Phase = "starting" | "recording" | "recorded" | "sending" | "discarded" | "failed";
+type Phase = "starting" | "recording" | "recorded" | "sending" | "failed";
 
 const ERRORS = {
   MICROPHONE_DENIED: {
@@ -50,8 +61,6 @@ function Talk() {
   // the length once the recording stopped
   const [recorded, setRecorded] = useState<number>();
   const [error, setError] = useState<(typeof ERRORS)[keyof typeof ERRORS]>();
-  // a new value starts a new recording ("Record Again")
-  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const current = startRecording(maxSeconds);
@@ -68,7 +77,9 @@ function Talk() {
       (recording) => {
         clearInterval(timer);
         if (recording.reason === "hidden") {
-          setPhase("discarded");
+          // the window went away mid-recording: nothing is sent, and Talk leaves so a reopened Raycast starts clean
+          showHUD("Recording discarded, the Raycast window was hidden");
+          popToRoot({ clearSearchBar: true });
         } else if (recording.reason === "limit") {
           setRecorded(recording.seconds);
           setPhase("recorded");
@@ -105,15 +116,7 @@ function Talk() {
       clearInterval(timer);
       current.dispose();
     };
-  }, [attempt]);
-
-  function recordAgain() {
-    setStartedAt(undefined);
-    setRecorded(undefined);
-    setError(undefined);
-    setPhase("starting");
-    setAttempt((value) => value + 1);
-  }
+  }, []);
 
   // Stops the helper and waits for the file; null when nothing was kept
   async function finish(): Promise<Recording | null> {
@@ -176,10 +179,6 @@ function Talk() {
             />
             <Action title="Talk with Options…" icon={Icon.Gear} onAction={sendWithOptions} />
           </ActionPanel>
-        ) : phase === "discarded" ? (
-          <ActionPanel>
-            <Action title="Record Again" icon={Icon.Microphone} onAction={recordAgain} />
-          </ActionPanel>
         ) : phase === "failed" && error === ERRORS.MICROPHONE_DENIED ? (
           <ActionPanel>
             <Action title="Open Privacy Settings" icon={Icon.Lock} onAction={() => open(PRIVACY_URL)} />
@@ -218,8 +217,6 @@ function markdown(
       return lines(`# ${formatClock(elapsed)}`, "Recorded", where, keys);
     case "sending":
       return lines(`# ${formatClock(elapsed)}`, "Sending…", where);
-    case "discarded":
-      return lines("# Discarded", "The window was hidden while recording, so nothing was sent.", "`↵` Record again   ·   `Esc` Leave");
     case "failed":
       return `## ${error?.title ?? "Could not record"}\n\n${error?.message ?? ""}`;
   }
