@@ -1,15 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  Detail,
-  Icon,
-  open,
-  popToRoot,
-  showHUD,
-  showToast,
-  Toast,
-  useNavigation,
-} from "@raycast/api";
+import { Action, ActionPanel, Detail, Icon, open, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { useWorkspace } from "./components/switch-workspace-action";
@@ -43,8 +32,7 @@ export default function Command() {
 }
 
 // Records at once: Enter stops and sends with your defaults, ⌘↵ stops and opens the options,
-// Esc discards the recording. Stops by itself at the API's limit, and discards the recording when Raycast's window
-// closes (Raycast keeps the command mounted in the background, the microphone must not go on).
+// Esc discards the recording. Stops by itself at the API's limit.
 function Talk() {
   const { push } = useNavigation();
   // no switch here, it records right away; with more than one key the text names the active workspace
@@ -76,11 +64,7 @@ function Talk() {
     current.result.then(
       (recording) => {
         clearInterval(timer);
-        if (recording.reason === "hidden") {
-          // the window went away mid-recording: nothing is sent, and Talk leaves so a reopened Raycast starts clean
-          showHUD("Recording discarded, the Raycast window was hidden");
-          popToRoot({ clearSearchBar: true });
-        } else if (recording.reason === "limit") {
+        if (recording.reason === "limit") {
           setRecorded(recording.seconds);
           setPhase("recorded");
           showToast({

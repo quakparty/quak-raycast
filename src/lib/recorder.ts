@@ -7,11 +7,10 @@ const PREFIX = "quak-talk-";
 // Leftovers of a command that died before it could clean up
 const STALE_MS = 10 * 60 * 1000;
 
-// "hidden": Raycast's window closed while recording (the command stays mounted), the helper discarded the audio
-export type Recording = { path: string; seconds: number; reason: "stopped" | "limit" | "cancelled" | "hidden" };
+export type Recording = { path: string; seconds: number; reason: "stopped" | "limit" | "cancelled" };
 
 export type Recorder = {
-  // Resolves once the helper stopped: by stop(), at the limit, cancelled or hidden
+  // Resolves once the helper stopped: by stop(), at the limit or cancelled
   result: Promise<Recording>;
   // True once the microphone records (after a permission prompt, if there was one)
   isStarted: () => boolean;
@@ -31,8 +30,7 @@ export function recorderErrorCode(error: unknown): RecorderErrorCode | undefined
 
 // Starts the Swift helper, which records the microphone into a temp folder. It runs as its own process and is steered
 // through files there (see swift/Sources/Recorder.swift): a heartbeat from here, a stop file with "send" or "cancel".
-// Without a heartbeat for 3 s (the command unloaded) or without a visible Raycast window for 1 s (Raycast hid the
-// command but keeps it mounted) it stops and deletes everything by itself.
+// Without a heartbeat for 3 s (the command unloaded) it stops and deletes everything by itself.
 // The recording stops at maxSeconds, the API's talkSeconds.
 export function startRecording(maxSeconds: number): Recorder {
   sweep();

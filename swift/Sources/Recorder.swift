@@ -1,5 +1,4 @@
 import AVFoundation
-import CoreGraphics
 import Foundation
 import RaycastSwiftMacros
 
@@ -8,12 +7,10 @@ import RaycastSwiftMacros
 // - started: created once the microphone records (after a permission prompt, if there was one)
 // - heartbeat: touched by the extension every few hundred ms; when it goes stale the command is gone
 // - stop: written by the extension, "send" keeps the audio, "cancel" discards it
-// While recording it also watches the Raycast window: Raycast keeps a hidden command mounted (until "pop to root"),
-// so the heartbeat goes on. Without a visible Raycast window for a second the recording stops and is discarded.
 struct Recording: Encodable {
   let path: String
   let seconds: Double
-  // "stopped", "limit", "cancelled" or "hidden" (Raycast's window closed, the audio is discarded)
+  // "stopped", "limit" or "cancelled"
   let reason: String
 }
 
@@ -34,9 +31,6 @@ enum RecorderError: Error, CustomStringConvertible {
 
 private let heartbeatTimeout: TimeInterval = 3
 private let pollInterval: UInt64 = 100_000_000
-// How often the window list is read, and how long no Raycast window may be visible
-private let windowCheckInterval: TimeInterval = 0.3
-private let hiddenTimeout: TimeInterval = 1
 
 @raycast func record(directory: String, maxSeconds: Double) async throws -> Recording {
   let folder = URL(fileURLWithPath: directory, isDirectory: true)
@@ -77,10 +71,6 @@ private let hiddenTimeout: TimeInterval = 1
   let start = Date()
   FileManager.default.createFile(atPath: folder.appendingPathComponent("started").path, contents: nil)
 
-  let raycast = ancestorPIDs()
-  var lastWindowCheck = Date.distantPast
-  var lastVisible = Date()
-
   while true {
     try? await Task.sleep(nanoseconds: pollInterval)
     let seconds = min(Date().timeIntervalSince(start), maxSeconds)
@@ -99,59 +89,9 @@ private let hiddenTimeout: TimeInterval = 1
       discard(folder)
       return Recording(path: audio.path, seconds: seconds, reason: "cancelled")
     default:
-      break
-    }
-
-    if Date().timeIntervalSince(lastWindowCheck) >= windowCheckInterval {
-      lastWindowCheck = Date()
-      // nil: the window list could not be read, then only the heartbeat counts
-      if raycastWindowVisible(raycast) != false {
-        lastVisible = lastWindowCheck
-      } else if lastWindowCheck.timeIntervalSince(lastVisible) > hiddenTimeout {
-        recorder.stop()
-        discard(folder)
-        return Recording(path: audio.path, seconds: seconds, reason: "hidden")
-      }
+      continue
     }
   }
-}
-
-// Raycast's main window: an on-screen panel above normal windows (layer > 0, measured on macOS 27: layer 8,
-// 825×523), owned by the Raycast process this helper runs under. Window names would need the screen recording
-// permission, so only owner, layer and bounds are read. The size skips small windows like a menu bar item.
-// Returns nil when the window list cannot be read.
-private func raycastWindowVisible(_ raycast: Set<pid_t>) -> Bool? {
-  guard
-    let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
-      as? [[String: Any]],
-    !windows.isEmpty
-  else { return nil }
-  return windows.contains { window in
-    let owner = (window[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value ?? -1
-    let name = window[kCGWindowOwnerName as String] as? String
-    guard raycast.contains(owner) || name == "Raycast" else { return false }
-    let layer = (window[kCGWindowLayer as String] as? NSNumber)?.intValue ?? 0
-    let alpha = (window[kCGWindowAlpha as String] as? NSNumber)?.doubleValue ?? 1
-    guard layer > 0, alpha > 0,
-      let bounds = window[kCGWindowBounds as String] as? NSDictionary,
-      let rect = CGRect(dictionaryRepresentation: bounds)
-    else { return false }
-    return rect.width >= 300 && rect.height >= 100
-  }
-}
-
-// This process and its parents up to launchd: Raycast starts the extension's backend, which starts this helper
-private func ancestorPIDs() -> Set<pid_t> {
-  var pids = Set<pid_t>()
-  var pid = getpid()
-  while pid > 1, pids.insert(pid).inserted {
-    var info = kinfo_proc()
-    var size = MemoryLayout<kinfo_proc>.stride
-    var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
-    guard sysctl(&mib, u_int(mib.count), &info, &size, nil, 0) == 0, size > 0 else { break }
-    pid = info.kp_eproc.e_ppid
-  }
-  return pids
 }
 
 private func readStop(_ folder: URL) -> String? {

@@ -10,8 +10,7 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   read out anything, anywhere.
 - **Talk to Speakers** (macOS only): records from the microphone as soon as it opens, with a red "Recording…" heading above the elapsed time. Enter stops and
   plays the recording with your defaults, ⌘↵ stops and opens the options (speakers, volume, voice effect,
-  ambience), Esc discards it. If Raycast's window is hidden while recording, the recording is discarded within about a
-  second and Talk to Speakers closes. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
+  ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
   macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
   Security → Microphone. On Windows the command only says that it needs macOS.
 - **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Sound Quicklink` (⌘⇧L)
