@@ -54,9 +54,11 @@ function Talk() {
     const current = startRecording(maxSeconds);
     recorder.current = current;
     const timer = setInterval(() => {
-      setNow(Date.now());
+      // one timestamp for both, so the clock never starts below zero
+      const at = Date.now();
+      setNow(at);
       if (current.isStarted()) {
-        setStartedAt((value) => value ?? Date.now());
+        setStartedAt((value) => value ?? at);
         setPhase((value) => (value === "starting" ? "recording" : value));
       }
     }, 200);
@@ -138,7 +140,7 @@ function Talk() {
     );
   }
 
-  const elapsed = recorded ?? (startedAt ? Math.min((now - startedAt) / 1000, maxSeconds) : 0);
+  const elapsed = recorded ?? (startedAt ? Math.min(Math.max(0, (now - startedAt) / 1000), maxSeconds) : 0);
   const left = maxSeconds - elapsed;
 
   return (

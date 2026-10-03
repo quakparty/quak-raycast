@@ -7,6 +7,6 @@ export function formatSeconds(seconds: number) {
 
 // Seconds as a clock, "0:07"
 export function formatClock(seconds: number) {
-  const whole = Math.floor(seconds);
+  const whole = Math.max(0, Math.floor(seconds));
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 }
