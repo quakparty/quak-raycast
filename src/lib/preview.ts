@@ -52,7 +52,7 @@ export async function startPreview(key: string, source: PlaySource, options: Pla
   if (!live()) return toast.hide();
   preview.toast = toast;
   try {
-    const play = await sendPlay(source, options, slot, true);
+    const { play } = await sendPlay(source, options, slot, true);
     if (!live()) return;
     if (!play.audioUrl) throw new Error("The preview has no audio");
     const path = await downloadAudio(play.audioUrl, preview.abort.signal);

@@ -160,7 +160,11 @@ export default function Command() {
 
   async function replay(play: Play) {
     const done = await withFeedback(
-      async () => (await quak(choice.slot).plays.replay(play.id)).data,
+      async () => {
+        // the balance from the same client that replayed
+        const client = quak(choice.slot);
+        return { play: (await client.plays.replay(play.id)).data, credits: client.credits };
+      },
       "toast",
       "Replaying…",
     );

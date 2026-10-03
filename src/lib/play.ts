@@ -45,6 +45,12 @@ function toParams(source: PlaySource, options: PlayOptions): Common & { voice?: 
   return params;
 }
 
+// Below this balance a play's HUD or toast says how many credits are left; the only place credits show up
+const LOW_CREDITS = 20;
+
+// A play and the workspace's balance after it (X-Quak-Credits of the same client's answer, null without one)
+export type Played = { play: Play; credits: number | null };
+
 // slot: the workspace's key, the active one by default (a quicklink brings its own). preview: only make the audio
 // (audioUrl), nothing plays on Sonos.
 export async function sendPlay(
@@ -52,23 +58,32 @@ export async function sendPlay(
   options: PlayOptions = {},
   slot?: number,
   preview = false,
-): Promise<Play> {
+): Promise<Played> {
   const client = quak(slot);
   const params = toParams(source, options);
   if (preview) params.preview = true;
-  switch (source.kind) {
-    case "text":
-      return (await client.play.text({ ...params, text: source.text })).data;
-    case "talk": {
-      // talk always runs through the voice processing, it takes no process field
-      const file = await readFile(source.path);
-      return (await client.play.talk({ ...params, file, filename: "talk.m4a" })).data;
+  const play = await (async () => {
+    switch (source.kind) {
+      case "text":
+        return (await client.play.text({ ...params, text: source.text })).data;
+      case "talk": {
+        // talk always runs through the voice processing, it takes no process field
+        const file = await readFile(source.path);
+        return (await client.play.talk({ ...params, file, filename: "talk.m4a" })).data;
+      }
+      case "sound":
+        return (await client.play.sound({ ...params, sound: source.slug })).data;
+      case "clip":
+        return (await client.play.clip({ ...params, clip: source.slug })).data;
     }
-    case "sound":
-      return (await client.play.sound({ ...params, sound: source.slug })).data;
-    case "clip":
-      return (await client.play.clip({ ...params, clip: source.slug })).data;
-  }
+  })();
+  return { play, credits: client.credits };
+}
+
+// "Only 12 credits left" below LOW_CREDITS, else nothing
+export function lowCredits(credits: number | null) {
+  if (credits === null || credits >= LOW_CREDITS) return undefined;
+  return `Only ${credits} ${credits === 1 ? "credit" : "credits"} left`;
 }
 
 const SKIP_REASONS: Record<string, string> = {
@@ -96,25 +111,26 @@ export function describePlay(play: Play): { title: string; message?: string; ski
 // "hud" closes Raycast (Play Text, Talk to Speakers), "toast" keeps the list open for the next one
 export type Feedback = "hud" | "toast";
 
-// Runs a play request with feedback: the API's message on errors, where it plays or why it was skipped on success.
-// With more than one key the HUD names the workspace (slot: the one the request uses). Returns the play, or null when
-// it failed.
+// Runs a play request with feedback: the API's message on errors, where it plays or why it was skipped on success,
+// and a low balance. With more than one key the HUD names the workspace (slot: the one the request uses). Returns the
+// play, or null when it failed.
 export async function withFeedback(
-  request: () => Promise<Play>,
+  request: () => Promise<Played>,
   feedback: Feedback,
   busy = "Playing…",
   slot = activeSlot(),
 ) {
   const toast = feedback === "toast" ? await showToast({ style: Toast.Style.Animated, title: busy }) : null;
   try {
-    const play = await request();
-    const { title, message } = describePlay(play);
+    const { play, credits } = await request();
+    const described = describePlay(play);
+    const message = [described.message, lowCredits(credits)].filter(Boolean).join(" · ") || undefined;
     if (toast) {
       toast.style = Toast.Style.Success;
-      toast.title = title;
+      toast.title = described.title;
       toast.message = message;
     } else {
-      const where = `${title}${await workspaceSuffix(slot)}`;
+      const where = `${described.title}${await workspaceSuffix(slot)}`;
       await showHUD(message ? `${where} · ${message}` : where);
     }
     return play;

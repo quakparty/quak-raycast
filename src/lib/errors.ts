@@ -29,5 +29,10 @@ export async function showError(error: unknown, title: string) {
     });
     return;
   }
+  // 402: the workspace ran out of credits; the toast carries the API's message
+  if (error instanceof QuakError && error.status === 402 && error.code === "ERROR_INSUFFICIENT_CREDITS") {
+    await showToast({ style: Toast.Style.Failure, title: "Out of credits", message: error.message });
+    return;
+  }
   await showFailureToast(error, { title });
 }
