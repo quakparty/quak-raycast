@@ -57,12 +57,16 @@ export function runProcess(command: string, args: string[], env?: NodeJS.Process
   };
 }
 
+// Windows PowerShell 5.1, part of every Windows; never pwsh, which may be missing
+export function windowsPowerShell() {
+  const root = process.env.SystemRoot ?? "C:\\Windows";
+  return join(root, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+}
+
 // Plays a local file with the system's player
 export function playFile(path: string): Playback {
   if (process.platform === "win32") {
-    const root = process.env.SystemRoot ?? "C:\\Windows";
-    const powershell = join(root, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
-    return runProcess(powershell, ["-NoProfile", "-NonInteractive", "-Command", WINDOWS_SCRIPT], {
+    return runProcess(windowsPowerShell(), ["-NoProfile", "-NonInteractive", "-Command", WINDOWS_SCRIPT], {
       ...process.env,
       QUAK_PREVIEW_FILE: path,
     });

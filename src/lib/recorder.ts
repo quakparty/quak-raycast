@@ -3,6 +3,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 // a namespace import: on Windows Raycast skips the Swift build and the module is empty, a named import fails the build
 import * as swift from "swift:../../swift";
+import { recordWindows } from "./recorder-windows";
 
 const PREFIX = "quak-talk-";
 // Leftovers of a command that died before it could clean up
@@ -21,7 +22,7 @@ export type Recorder = {
   dispose: () => void;
 };
 
-// Error codes of the Swift helper (the text before the colon)
+// Error codes of the Swift helper and the Windows script (the text before the colon)
 export type RecorderErrorCode = "MICROPHONE_DENIED" | "NO_MICROPHONE" | "RECORDING_FAILED";
 
 export function recorderErrorCode(error: unknown): RecorderErrorCode | undefined {
@@ -29,9 +30,10 @@ export function recorderErrorCode(error: unknown): RecorderErrorCode | undefined
   return (["MICROPHONE_DENIED", "NO_MICROPHONE", "RECORDING_FAILED"] as const).find((code) => message.startsWith(code));
 }
 
-// Starts the Swift helper, which records the microphone into a temp folder. It runs as its own process and is steered
-// through files there (see swift/Sources/Recorder.swift): a heartbeat from here, a stop file with "send" or "cancel".
-// Without a heartbeat for 3 s (the command unloaded) it stops and deletes everything by itself.
+// Starts the recorder, which records the microphone into a temp folder: the Swift helper on macOS
+// (swift/Sources/Recorder.swift, AAC), a PowerShell script on Windows (assets/talk-recorder.ps1, WAV). Both run as their
+// own process and are steered through files there: a heartbeat from here, a stop file with "send" or "cancel".
+// Without a heartbeat for 3 s (the command unloaded) they stop and delete everything by themselves.
 // The recording stops at maxSeconds, the API's talkSeconds.
 export function startRecording(maxSeconds: number): Recorder {
   sweep();
@@ -48,7 +50,10 @@ export function startRecording(maxSeconds: number): Recorder {
   }, 500);
 
   // the heartbeat runs until dispose(), so a kept recording (options form) is not swept by another run
-  const result = swift.record(directory, maxSeconds) as Promise<Recording>;
+  const result: Promise<Recording> =
+    process.platform === "win32"
+      ? recordWindows(directory, maxSeconds)
+      : (swift.record(directory, maxSeconds) as Promise<Recording>);
   const command = (value: "send" | "cancel") => {
     try {
       writeFileSync(join(directory, "stop"), value);
