@@ -9,32 +9,28 @@ import { useLimits } from "./lib/limits";
 import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
 import { targetsLine, useTargets } from "./lib/targets";
 
-const PRIVACY_URL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
+const WINDOWS = process.platform === "win32";
+
+const PRIVACY_URL = WINDOWS
+  ? "ms-settings:privacy-microphone"
+  : "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
 
 type Phase = "starting" | "recording" | "recorded" | "sending" | "failed";
 
 const ERRORS = {
   MICROPHONE_DENIED: {
     title: "No access to the microphone",
-    message: "Allow Raycast in System Settings → Privacy & Security → Microphone, then open Talk again.",
+    message: WINDOWS
+      ? "Allow desktop apps to access the microphone in Settings → Privacy & security → Microphone and check that it is not muted, then open Talk again."
+      : "Allow Raycast in System Settings → Privacy & Security → Microphone, then open Talk again.",
   },
   NO_MICROPHONE: { title: "No microphone found", message: "Connect a microphone and open Talk again." },
   RECORDING_FAILED: { title: "Could not record", message: "The microphone did not start." },
 };
 
-// The recording is native code (Swift, AVFoundation) that only exists on macOS
-export default function Command() {
-  if (process.platform !== "darwin") {
-    return (
-      <Detail markdown={"## Talk needs macOS\n\nRecording from the microphone is only available in Raycast for Mac."} />
-    );
-  }
-  return <Talk />;
-}
-
 // Records at once: Enter stops and sends with your defaults, ⌘↵ stops and opens the options,
 // Esc discards the recording. Stops by itself at the API's limit.
-function Talk() {
+export default function Command() {
   const { push } = useNavigation();
   // no switch here, it records right away; with more than one key the text names the active workspace
   const choice = useWorkspace();
@@ -196,11 +192,14 @@ function markdown(
 ) {
   // short and scannable: state and clock as the heading, the keys as one line of key caps
   const enter = own ? "Send with your defaults" : "Send";
-  const keys = `\`↵\` ${enter}   ·   \`⌘↵\` Options   ·   \`Esc\` Discard`;
+  const keys = `\`↵\` ${enter}   ·   \`${WINDOWS ? "Ctrl+↵" : "⌘↵"}\` Options   ·   \`Esc\` Discard`;
   const lines = (...items: string[]) => items.filter(Boolean).join("\n\n");
   switch (phase) {
     case "starting":
-      return lines("# Starting the microphone…", "The first time, macOS asks whether Raycast may use it.");
+      return lines(
+        "# Starting the microphone…",
+        WINDOWS ? "" : "The first time, macOS asks whether Raycast may use it.",
+      );
     case "recording":
       return lines(
         `# 🔴 ${formatClock(elapsed)}`,

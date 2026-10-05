@@ -58,7 +58,7 @@
       "name": "talk",
       "title": "Talk to Speakers",
       "subtitle": "Quak",
-      "description": "Record from the microphone and play it on your speakers (macOS only).",
+      "description": "Record from the microphone and play it on your speakers.",
       "keywords": [
         "sonos",
         "record",
