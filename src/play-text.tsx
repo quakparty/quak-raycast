@@ -7,6 +7,7 @@ import { useDefaults } from "./lib/defaults";
 import { useLimits } from "./lib/limits";
 import { playWithDefaults } from "./lib/play";
 import { usePreview } from "./lib/preview";
+import { targetsLine, targetsTooltip, useTargets } from "./lib/targets";
 
 // The search bar is the text: Enter says it with your defaults, ⌘↵ opens the options.
 // With an argument from root search (or as fallback command) it says the text right away.
@@ -20,6 +21,8 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   // own defaults for texts: Enter's title says so
   const defaults = useDefaults("text", choice.slot);
   const preview = usePreview();
+  // where Enter plays it, next to the text
+  const targets = useTargets(choice.slot, defaults);
 
   useEffect(() => {
     if (!initial || started.current) return;
@@ -45,6 +48,17 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
           icon={Icon.SpeechBubble}
           title={trimmed}
           accessories={[
+            ...(targets
+              ? [
+                  {
+                    text: {
+                      value: targetsLine(targets),
+                      color: targets.source === "none" ? Color.Orange : undefined,
+                    },
+                    tooltip: targetsTooltip(targets),
+                  },
+                ]
+              : []),
             { text: { value: `${trimmed.length}/${maxCharacters}`, color: tooLong ? Color.Red : undefined } },
           ]}
           actions={
