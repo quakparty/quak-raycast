@@ -5,7 +5,7 @@
 - Play Text: a text with the workspace's defaults or with options (speakers, volume, voice, voice effect, ambience).
 - Play Text: the actions as rows (Play, Play with Options…, Preview), recent texts to say again, and a character counter near the limit.
 - Play Selected Text: the selection in any app.
-- Talk to Speakers (macOS): record from the microphone and play it with the workspace's defaults or with options.
+- Talk to Speakers (macOS and Windows): record from the microphone and play it with the workspace's defaults or with options.
 - Play sounds from the library and the workspace's clips, or one of them straight from a quicklink.
 - Stop Announcements: stop everything on all speakers.
 - Preview (⌘Y): hear a text, sound or clip on this computer first, with the same options, before it plays on the speakers.

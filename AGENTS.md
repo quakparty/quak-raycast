@@ -16,7 +16,8 @@ Raycast extension "Quak for Sonos" for [Quak](https://quak.party), published thr
   Start the dev server with `bun run dev` (or `npm run dev`). Changes to `package.json` (titles, descriptions,
   preferences, commands) only show after restarting it.
 - **Gates:** `npx ray lint` and `npx tsc --noEmit -p .`. Don't run `npx ray build` while a dev server runs: the Swift
-  build of Talk to Speakers shares `swift/.raycast-swift-build` and locks.
+  build of Talk to Speakers shares `swift/.raycast-swift-build` and locks. Talk on Windows is `assets/talk-recorder.ps1` (Windows
+  PowerShell 5.1, ASCII only, same folder protocol as `swift/Sources/Recorder.swift`); keep both in step.
 - **Store rules:** MIT, US English, no `navigationTitle` in root commands, no settings commands (configuration goes
   into the preferences), first action = Enter, second = ⌘↵. ⌘P is Raycast's shortcut for the search bar dropdown.
 - **Product decisions:** few commands; no browser fallbacks for features; credits show up only after a play below 20 (`LOW_CREDITS` in

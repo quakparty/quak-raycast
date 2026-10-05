@@ -12,11 +12,13 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   right away.
 - **Play Selected Text**: plays the text you selected in any app with your defaults. Give it a hotkey to
   read out anything, anywhere.
-- **Talk to Speakers** (macOS only): records from the microphone as soon as it opens, with a red "Recording…" heading above the elapsed time. Enter stops and
-  plays the recording with your defaults, ⌘↵ stops and opens the options (speakers, volume, voice effect,
-  ambience), Esc discards it. The recording stops by itself at the most Quak plays of a talk (3 minutes today, read from the API). The first time,
-  macOS asks whether Raycast may use the microphone; if you declined, allow Raycast in System Settings → Privacy &
-  Security → Microphone. On Windows the command only says that it needs macOS.
+- **Talk to Speakers** (macOS and Windows): records from the microphone as soon as it opens, with a red "Recording…"
+  heading above the elapsed time. Enter stops and plays the recording with your defaults, ⌘↵ (Ctrl+↵ on Windows) stops
+  and opens the options (speakers, volume, voice effect, ambience), Esc discards it. The recording stops by itself at
+  the most Quak plays of a talk (3 minutes today, read from the API). The first time, macOS asks whether Raycast may use
+  the microphone; if you declined, allow Raycast in System Settings → Privacy & Security → Microphone. On Windows,
+  "Let desktop apps access your microphone" must be on in Settings → Privacy & security → Microphone; without it
+  Windows records silence, and Talk says so.
 - **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Sound Quicklink` (⌘⇧L)
   saves a quicklink that plays this sound right away with your defaults (see below); give it an alias or a hotkey.
 - **Play Clip**: play one of your workspace's clips. `Create Clip Quicklink` (⌘⇧L) works like in Play Sound.
@@ -75,3 +77,10 @@ with Xcode (16.3 or later) and import its functions from `swift:../../swift` in 
 as its own process, so the extension steers the recording through files in a temp folder (heartbeat, stop); without a
 heartbeat the helper stops and deletes the audio by itself. Don't run a second build while the dev server compiles the
 Swift package, both use `swift/.raycast-swift-build` and xcodebuild fails with a locked build database.
+
+On Windows, Talk records with `assets/talk-recorder.ps1` in Windows PowerShell 5.1 (winmm.dll through MCI, 16-bit mono
+WAV at 22.05 kHz, 3 minutes ≈ 8 MB, below the API's 10 MB upload limit), nothing to install. `src/lib/recorder-windows.ts`
+starts it with `-EncodedCommand`, passes the folder, limit and parent process through the environment and reads the
+result as JSON from stdout; the folder protocol is the same as the Swift helper's. To try it outside Raycast, run
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\assets\talk-recorder.ps1`: it records into a new temp folder,
+Enter keeps the audio, Esc discards it.
