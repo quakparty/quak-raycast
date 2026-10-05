@@ -7,6 +7,7 @@ import { playWithDefaults } from "./lib/play";
 import { useDefaults } from "./lib/defaults";
 import { useLimits } from "./lib/limits";
 import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
+import { targetsLine, useTargets } from "./lib/targets";
 
 const PRIVACY_URL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone";
 
@@ -40,6 +41,8 @@ function Talk() {
   // own defaults for talk: Enter's title and the text say so
   const defaults = useDefaults("talk", choice.slot);
   const own = Boolean(defaults.data);
+  // where Enter sends it, shown before sending
+  const targets = useTargets(choice.slot, defaults);
   const recorder = useRef<Recorder>(null);
   const [phase, setPhase] = useState<Phase>("starting");
   // fixed at the start: the cached limit, or the default on the very first run
@@ -152,7 +155,13 @@ function Talk() {
         left,
         maxSeconds,
         own,
-        choice.multiple ? choice.active.name : undefined,
+        [
+          // the warning stands out: Enter would fail
+          targets && (targets.source === "none" ? `**${targetsLine(targets)}**` : targetsLine(targets)),
+          choice.multiple ? choice.active.name : undefined,
+        ]
+          .filter(Boolean)
+          .join(" · "),
         error,
       )}
       actions={
@@ -181,11 +190,11 @@ function markdown(
   left: number,
   maxSeconds: number,
   own: boolean,
-  workspace?: string,
+  // "Plays on Wohnzimmer, Küche · Personal" (the workspace with more than one key)
+  where: string,
   error?: { title: string; message: string },
 ) {
   // short and scannable: state and clock as the heading, the keys as one line of key caps
-  const where = workspace ? `To **${workspace}**` : "";
   const enter = own ? "Send with your defaults" : "Send";
   const keys = `\`↵\` ${enter}   ·   \`⌘↵\` Options   ·   \`Esc\` Discard`;
   const lines = (...items: string[]) => items.filter(Boolean).join("\n\n");
