@@ -1,4 +1,4 @@
-import { showHUD } from "@raycast/api";
+import { PopToRootType, showHUD } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { activeSlot } from "./lib/slots";
 import { stopAll } from "./lib/stop";
@@ -8,7 +8,7 @@ import { workspaceSuffix } from "./lib/workspaces";
 export default async function Command() {
   const slot = activeSlot();
   try {
-    await showHUD(`${await stopAll(slot)}${await workspaceSuffix(slot)}`);
+    await showHUD(`${await stopAll(slot)}${await workspaceSuffix(slot)}`, { popToRootType: PopToRootType.Immediate });
   } catch (error) {
     await showError(error, "Could not stop");
   }

@@ -1,4 +1,4 @@
-import { showHUD, showToast, Toast } from "@raycast/api";
+import { PopToRootType, showHUD, showToast, Toast } from "@raycast/api";
 import { readFile } from "fs/promises";
 import { loadDefaults } from "./defaults";
 import { showError } from "./errors";
@@ -131,7 +131,8 @@ export async function withFeedback(
       toast.message = message;
     } else {
       const where = `${described.title}${await workspaceSuffix(slot)}`;
-      await showHUD(message ? `${where} · ${message}` : where);
+      // the play is done: back to root search, so reopening Raycast doesn't land in the same command again
+      await showHUD(message ? `${where} · ${message}` : where, { popToRootType: PopToRootType.Immediate });
     }
     return play;
   } catch (error) {
