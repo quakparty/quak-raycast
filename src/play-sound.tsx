@@ -6,11 +6,13 @@ import { PlayOptionsForm } from "./components/play-options-form";
 import { PreviewAction } from "./components/preview-action";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
 import { StopAction } from "./components/stop-action";
+import { TargetsSection } from "./components/targets-section";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
 import { usePreview } from "./lib/preview";
+import { useTargets } from "./lib/targets";
 import { quak } from "./lib/quak";
 
 const ALL_TAGS = "all";
@@ -23,6 +25,8 @@ export default function Command(props: LaunchProps) {
   // own defaults for sounds in this workspace: Enter's title says so
   const defaults = useDefaults("sound", choice.slot);
   const preview = usePreview();
+  // where Enter plays, once above the list
+  const targets = useTargets(choice.slot, defaults);
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
@@ -53,45 +57,47 @@ export default function Command(props: LaunchProps) {
         </List.Dropdown>
       }
     >
-      {sounds.data?.map((sound) => {
-        const source = { kind: "sound" as const, slug: sound.slug, name: sound.name };
-        return (
-          <List.Item
-            key={sound.slug}
-            icon={Icon.Music}
-            title={sound.name}
-            subtitle={sound.description ?? undefined}
-            accessories={[
-              ...sound.tags.map((value) => ({ tag: tagNames.get(value) ?? value })),
-              { text: formatSeconds(sound.length) },
-            ]}
-            actions={
-              <ActionPanel>
-                <Action
-                  title={defaults.data ? "Play Sound with Your Defaults" : "Play Sound"}
-                  icon={Icon.Play}
-                  onAction={() => playWithDefaults(source, "toast", choice.slot)}
-                />
-                <Action.Push
-                  title="Play with Options…"
-                  icon={Icon.Gear}
-                  target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
-                />
-                <PreviewAction source={source} slot={choice.slot} running={preview} />
-                <CreateQuicklinkAction
-                  kind="sound"
-                  slug={sound.slug}
-                  name={sound.name}
-                  workspace={choice.multiple ? choice.active : undefined}
-                />
-                <StopAction />
-                <Action.CopyToClipboard title="Copy Sound Slug" content={sound.slug} />
-                <ExtensionActions choice={choice} />
-              </ActionPanel>
-            }
-          />
-        );
-      })}
+      <TargetsSection targets={targets}>
+        {sounds.data?.map((sound) => {
+          const source = { kind: "sound" as const, slug: sound.slug, name: sound.name };
+          return (
+            <List.Item
+              key={sound.slug}
+              icon={Icon.Music}
+              title={sound.name}
+              subtitle={sound.description ?? undefined}
+              accessories={[
+                ...sound.tags.map((value) => ({ tag: tagNames.get(value) ?? value })),
+                { text: formatSeconds(sound.length) },
+              ]}
+              actions={
+                <ActionPanel>
+                  <Action
+                    title={defaults.data ? "Play Sound with Your Defaults" : "Play Sound"}
+                    icon={Icon.Play}
+                    onAction={() => playWithDefaults(source, "toast", choice.slot)}
+                  />
+                  <Action.Push
+                    title="Play with Options…"
+                    icon={Icon.Gear}
+                    target={<PlayOptionsForm source={source} onDefaultsChange={defaults.revalidate} />}
+                  />
+                  <PreviewAction source={source} slot={choice.slot} running={preview} />
+                  <CreateQuicklinkAction
+                    kind="sound"
+                    slug={sound.slug}
+                    name={sound.name}
+                    workspace={choice.multiple ? choice.active : undefined}
+                  />
+                  <StopAction />
+                  <Action.CopyToClipboard title="Copy Sound Slug" content={sound.slug} />
+                  <ExtensionActions choice={choice} />
+                </ActionPanel>
+              }
+            />
+          );
+        })}
+      </TargetsSection>
       {!sounds.isLoading && (
         <List.EmptyView
           icon={Icon.Music}
