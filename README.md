@@ -48,7 +48,7 @@ computer (Raycast's local storage), never with your key.
 
 ## Setup
 
-Create an API key with scope `play` (or `create` to also save plays as clips) at [quak.party/app/settings/keys](https://quak.party/app/settings/keys) and paste it into the extension's
+Create an API key with scope `play` (or `create` to also save plays as clips) in [Settings → API keys](https://quak.party/app/settings/keys) on quak.party and paste it into the extension's
 preferences.
 
 Each key belongs to one workspace. For a second or third workspace, add its key as **Second Workspace** or **Third
