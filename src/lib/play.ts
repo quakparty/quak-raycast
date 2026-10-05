@@ -68,8 +68,10 @@ export async function sendPlay(
         return (await client.play.text({ ...params, text: source.text })).data;
       case "talk": {
         // talk always runs through the voice processing, it takes no process field
-        const file = await readFile(source.path);
-        return (await client.play.talk({ ...params, file, filename: "talk.m4a" })).data;
+        // AAC from the Swift helper on macOS, WAV from the PowerShell script on Windows
+        const wav = source.path.toLowerCase().endsWith(".wav");
+        const file = new Blob([await readFile(source.path)], { type: wav ? "audio/wav" : "audio/mp4" });
+        return (await client.play.talk({ ...params, file, filename: wav ? "talk.wav" : "talk.m4a" })).data;
       }
       case "sound":
         return (await client.play.sound({ ...params, sound: source.slug })).data;
