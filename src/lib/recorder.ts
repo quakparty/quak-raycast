@@ -1,7 +1,8 @@
 import { existsSync, mkdtempSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { record } from "swift:../../swift";
+// a namespace import: on Windows Raycast skips the Swift build and the module is empty, a named import fails the build
+import * as swift from "swift:../../swift";
 
 const PREFIX = "quak-talk-";
 // Leftovers of a command that died before it could clean up
@@ -47,7 +48,7 @@ export function startRecording(maxSeconds: number): Recorder {
   }, 500);
 
   // the heartbeat runs until dispose(), so a kept recording (options form) is not swept by another run
-  const result = record(directory, maxSeconds) as Promise<Recording>;
+  const result = swift.record(directory, maxSeconds) as Promise<Recording>;
   const command = (value: "send" | "cancel") => {
     try {
       writeFileSync(join(directory, "stop"), value);
