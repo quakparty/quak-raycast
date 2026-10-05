@@ -21,7 +21,8 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   runs, save it as a clip or copy its text.
 
 Everything you leave out comes from your workspace's defaults on quak.party. The options form remembers your last
-choices, or starts from your defaults when you saved some. Errors from Quak (speaker offline etc.) show as a toast, plays during quiet hours are skipped.
+choices, or starts from your defaults when you saved some. Before you press Enter, every command shows where it
+will play ("Plays on Living Room, Kitchen"): your defaults' speakers, else the workspace's default speakers. Errors from Quak (speaker offline etc.) show as a toast, plays during quiet hours are skipped.
 When fewer than 20 credits are left, the message after a play says how many ("Only 12 credits left"); when they
 run out, the play fails with "Out of credits".
 
