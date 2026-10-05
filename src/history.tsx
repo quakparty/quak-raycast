@@ -3,10 +3,12 @@ import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect } from "react";
 import type { Play } from "@quak/js";
+import { KeyProblem } from "./components/key-problem";
 import { SaveClipForm } from "./components/save-clip-form";
 import { STOP_ALL_SHORTCUT, STOP_SHORTCUT, StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { formatSeconds } from "./lib/format";
+import { type KeyedSlot, useKey, useWipe } from "./lib/key-state";
 import { withFeedback } from "./lib/play";
 import { quak } from "./lib/quak";
 import { useLivePlays } from "./lib/watch";
@@ -81,35 +83,36 @@ function nameOf(names: Record<string, string> | undefined, slug: string) {
 // Recent plays of the workspace with their details
 export default function Command() {
   const choice = useWorkspace();
+  const key = useKey(choice.slot);
   // the history names sounds and clips by slug, the lists give their names; plain objects, because the cache stores
   // JSON and a Map would come back empty
   const names = useCachedPromise(
-    async (slot: number) => {
+    async ({ slot }: KeyedSlot) => {
       const [sounds, clips] = await Promise.all([quak(slot).sounds.list({ limit: 500 }), quak(slot).clips.list()]);
       return {
         sounds: Object.fromEntries(sounds.data.map((sound) => [sound.slug, sound.name])),
         clips: Object.fromEntries(clips.data.map((clip) => [clip.slug, clip.name])),
       };
     },
-    [choice.slot],
-    {
-      // only nicer names; the history itself reports a failure
-      onError: () => undefined,
-    },
+    [key.arg],
+    // only nicer names; the history itself reports a failure
+    key.options(),
   );
 
   const plays = useCachedPromise(
-    (slot: number) =>
+    ({ slot }: KeyedSlot) =>
       async ({ page }: { page: number }) => {
         const { data, meta } = await quak(slot).plays.list({ limit: PAGE_SIZE, offset: page * PAGE_SIZE });
         return { data, hasMore: meta.offset + meta.count < meta.total };
       },
-    [choice.slot],
-    { keepPreviousData: true, onError: (error) => showError(error, "Could not load the history") },
+    [key.arg],
+    { keepPreviousData: true, ...key.options((error) => showError(error, "Could not load the history")) },
   );
+  useWipe(key.state, names);
+  useWipe(key.state, plays);
 
   // changes arrive live over the API's WebSocket; while it is down, reload every 2 s as long as a play is running
-  const live = useLivePlays(choice.slot);
+  const live = useLivePlays(choice.slot, key.ok);
   const listed = new Set(plays.data?.map((play) => play.id));
   const shown = [
     ...Object.values(live.plays)
@@ -119,10 +122,10 @@ export default function Command() {
   ];
   const busy = shown.some((play) => play.status === "PENDING" || play.status === "ACTIVE");
   useEffect(() => {
-    if (live.connected || !busy || plays.isLoading) return;
+    if (!key.ok || live.connected || !busy || plays.isLoading) return;
     const timer = setTimeout(() => plays.revalidate(), POLL_MS);
     return () => clearTimeout(timer);
-  }, [live.connected, busy, plays.isLoading, plays.data]);
+  }, [key.ok, live.connected, busy, plays.isLoading, plays.data]);
 
   function content(play: Play) {
     switch (play.type) {
@@ -247,6 +250,9 @@ export default function Command() {
       />
     );
   }
+
+  // a missing or rejected key: only what to do about it, nothing cached
+  if (key.state !== "ok") return <KeyProblem state={key.state} choice={choice} />;
 
   return (
     <List

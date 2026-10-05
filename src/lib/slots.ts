@@ -1,4 +1,5 @@
 import { Cache, getPreferenceValues } from "@raycast/api";
+import { createHash } from "crypto";
 
 // Up to three keys, one per workspace: the required API Key and two optional ones. A slot is the index of its field.
 const FIELDS = ["apiKey", "apiKey2", "apiKey3"] as const;
@@ -14,6 +15,11 @@ const ACTIVE = "active";
 // The raw value of a key field, trimmed; empty when not set
 export function keyField(slot: number) {
   return (getPreferenceValues<KeyPreferences>()[FIELDS[slot]] ?? "").trim();
+}
+
+// A short hash of a slot's key (never the key itself): ties cached data and a rejection to that key
+export function keyHash(slot: number) {
+  return createHash("sha256").update(keyField(slot)).digest("hex").slice(0, 16);
 }
 
 // The title of a key field, for error messages

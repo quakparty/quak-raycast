@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Icon, Keyboard, openExtensionPreferences } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
+import { noteKeyError } from "../lib/key-state";
 import { activeSlot, configuredSlots, setActiveSlot } from "../lib/slots";
 import { cachedWorkspace, listWorkspaces, slotName, type Workspace } from "../lib/workspaces";
 
@@ -29,11 +30,19 @@ export function useWorkspace(): WorkspaceChoice {
   const slots = configuredSlots();
   const multiple = slots.length > 1;
   const [slot, setSlot] = useState(activeSlot);
-  const lookup = useCachedPromise(async (list: number[]) => (await listWorkspaces(list)).workspaces, [slots], {
-    // also with one key, for the name in the actions; cached, so only the first run asks
-    // the fallback names stay; each list reports a bad key itself
-    onError: () => undefined,
-  });
+  const lookup = useCachedPromise(
+    async (list: number[]) => {
+      const { workspaces, errors } = await listWorkspaces(list);
+      // a rejected key switches the lists to their key view; other failures keep the fallback names
+      for (const { slot, error } of errors) noteKeyError(slot, error);
+      return workspaces;
+    },
+    [slots],
+    {
+      // also with one key, for the name in the actions; cached, so only the first run asks
+      onError: () => undefined,
+    },
+  );
 
   const workspaces = slots.map(
     (value) =>

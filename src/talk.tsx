@@ -1,10 +1,12 @@
 import { Action, ActionPanel, Detail, Icon, open, showToast, Toast, useNavigation } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
+import { KeyProblem } from "./components/key-problem";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { useWorkspace } from "./components/switch-workspace-action";
 import { formatClock } from "./lib/format";
 import { playWithDefaults } from "./lib/play";
 import { useDefaults } from "./lib/defaults";
+import { useKey } from "./lib/key-state";
 import { useLimits } from "./lib/limits";
 import { Recorder, Recording, recorderErrorCode, startRecording } from "./lib/recorder";
 import { targetsLine, useTargets } from "./lib/targets";
@@ -34,6 +36,8 @@ export default function Command() {
   const { push } = useNavigation();
   // no switch here, it records right away; with more than one key the text names the active workspace
   const choice = useWorkspace();
+  // an unusable key: no recording, the key view says what to do
+  const key = useKey(choice.slot);
   // own defaults for talk: Enter's title and the text say so
   const defaults = useDefaults("talk", choice.slot);
   const own = Boolean(defaults.data);
@@ -50,6 +54,12 @@ export default function Command() {
   const [error, setError] = useState<(typeof ERRORS)[keyof typeof ERRORS]>();
 
   useEffect(() => {
+    if (!key.ok) return;
+    // a fresh start, also after Try Again in the key view
+    setPhase("starting");
+    setStartedAt(undefined);
+    setRecorded(undefined);
+    setError(undefined);
     const current = startRecording(maxSeconds);
     recorder.current = current;
     const timer = setInterval(() => {
@@ -97,11 +107,12 @@ export default function Command() {
     );
 
     // Esc, closing Raycast or leaving the command: stop the helper and delete the audio
+    // a key rejected while recording also stops it, the play would fail
     return () => {
       clearInterval(timer);
       current.dispose();
     };
-  }, []);
+  }, [key.ok]);
 
   // Stops the helper and waits for the file; null when nothing was kept
   async function finish(): Promise<Recording | null> {
@@ -138,6 +149,8 @@ export default function Command() {
       />,
     );
   }
+
+  if (key.state !== "ok") return <KeyProblem state={key.state} choice={choice} />;
 
   const elapsed = recorded ?? (startedAt ? Math.min(Math.max(0, (now - startedAt) / 1000), maxSeconds) : 0);
   const left = maxSeconds - elapsed;

@@ -2,6 +2,7 @@ import { PopToRootType, showHUD, showToast, Toast } from "@raycast/api";
 import { readFile } from "fs/promises";
 import { loadDefaults } from "./defaults";
 import { showError } from "./errors";
+import { noteKeyError } from "./key-state";
 import type { Play, PlayTextParams } from "@quak/js";
 import { quak } from "./quak";
 import { activeSlot } from "./slots";
@@ -139,6 +140,8 @@ export async function withFeedback(
     return play;
   } catch (error) {
     await toast?.hide();
+    // the lists switch to their key view; the toast stays, it answers this action
+    noteKeyError(slot, error);
     await showError(error, "Could not play");
     return null;
   }

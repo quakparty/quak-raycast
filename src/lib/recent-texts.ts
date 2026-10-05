@@ -1,5 +1,6 @@
 import type { Play } from "@quak/js";
 import { useCachedPromise } from "@raycast/utils";
+import { type KeyedSlot, useKey, useWipe } from "./key-state";
 import { quak } from "./quak";
 
 // How many text plays to look at, and how many different texts to offer
@@ -17,7 +18,7 @@ function textOf(play: Play) {
 }
 
 // The workspace's recent texts, newest first, each text once
-async function fetchRecentTexts(slot: number): Promise<RecentText[]> {
+async function fetchRecentTexts({ slot }: KeyedSlot): Promise<RecentText[]> {
   const { data } = await quak(slot).plays.list({ type: "TEXT", limit: PAGE_SIZE });
   const seen = new Set<string>();
   const texts: RecentText[] = [];
@@ -33,9 +34,9 @@ async function fetchRecentTexts(slot: number): Promise<RecentText[]> {
 
 // Recent texts of a slot's workspace, cached across runs and refreshed in the background
 export function useRecentTexts(slot: number) {
-  return useCachedPromise(fetchRecentTexts, [slot], {
-    keepPreviousData: true,
-    // only suggestions; a play reports a bad key itself
-    onError: () => undefined,
-  });
+  const key = useKey(slot);
+  // only suggestions; other failures stay quiet
+  const recent = useCachedPromise(fetchRecentTexts, [key.arg], { keepPreviousData: true, ...key.options() });
+  useWipe(key.state, recent);
+  return recent;
 }

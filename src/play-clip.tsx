@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Icon, LaunchProps, List } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
+import { KeyProblem } from "./components/key-problem";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { PreviewAction } from "./components/preview-action";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
@@ -9,6 +10,7 @@ import { TargetsSection } from "./components/targets-section";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
+import { type KeyedSlot, useKey, useWipe } from "./lib/key-state";
 import { playWithDefaults } from "./lib/play";
 import { usePreview } from "./lib/preview";
 import { useTargets } from "./lib/targets";
@@ -23,9 +25,16 @@ export default function Command(props: LaunchProps) {
   const preview = usePreview();
   // where Enter plays, once above the list
   const targets = useTargets(choice.slot, defaults);
-  const clips = useCachedPromise(async (slot: number) => (await quak(slot).clips.list()).data, [choice.slot], {
-    onError: (error) => showError(error, "Could not load clips"),
-  });
+  const key = useKey(choice.slot);
+  const clips = useCachedPromise(
+    async ({ slot }: KeyedSlot) => (await quak(slot).clips.list()).data,
+    [key.arg],
+    key.options((error) => showError(error, "Could not load clips")),
+  );
+  useWipe(key.state, clips);
+
+  // a missing or rejected key: only what to do about it, nothing cached
+  if (key.state !== "ok") return <KeyProblem state={key.state} choice={choice} />;
 
   return (
     <List

@@ -1,4 +1,5 @@
 import { useCachedPromise } from "@raycast/utils";
+import { type KeyedSlot, useKey, useWipe } from "./key-state";
 import { useWorkspaceDetails } from "./limits";
 import type { PlayOptions } from "./play";
 import { quak } from "./quak";
@@ -8,7 +9,7 @@ import { quak } from "./quak";
 export type Targets = { names: string[]; source: "yours" | "workspace" | "all" | "none" };
 
 // All speakers with names, also locations, which can stand in defaults but are left out of the plain list
-function fetchSpeakerNames(slot: number) {
+function fetchSpeakerNames({ slot }: KeyedSlot) {
   return quak(slot)
     .speakers.list({ type: "ALL" })
     .then(({ data }) => data.map((speaker) => ({ slug: speaker.slug, name: speaker.name })));
@@ -18,13 +19,13 @@ function fetchSpeakerNames(slot: number) {
 // command's own defaults (useDefaults), so saving or resetting them in the form shows up here. Undefined until both
 // are known; cached, so only the very first run waits.
 export function useTargets(slot: number, defaults: { data?: PlayOptions; isLoading: boolean }): Targets | undefined {
+  const key = useKey(slot);
   const workspace = useWorkspaceDetails(slot);
-  const speakers = useCachedPromise(fetchSpeakerNames, [slot], {
-    // only names; the slugs stay
-    onError: () => undefined,
-  });
+  // only names; the slugs stay
+  const speakers = useCachedPromise(fetchSpeakerNames, [key.arg], key.options());
+  useWipe(key.state, speakers);
 
-  if (defaults.isLoading) return undefined;
+  if (!key.ok || defaults.isLoading) return undefined;
   const own = defaults.data?.to;
   const slugs = own?.length ? own : workspace.data?.defaults.speakers;
   if (!slugs) return undefined;

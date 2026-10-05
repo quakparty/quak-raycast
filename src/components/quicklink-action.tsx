@@ -3,7 +3,8 @@ import { createDeeplink } from "@raycast/utils";
 import { useEffect, useRef, useState } from "react";
 import { showError } from "../lib/errors";
 import { playWithDefaults } from "../lib/play";
-import { configuredSlots } from "../lib/slots";
+import { keyState } from "../lib/key-state";
+import { activeSlot, configuredSlots } from "../lib/slots";
 import { cachedWorkspace, listWorkspaces, type Workspace } from "../lib/workspaces";
 
 type Kind = "sound" | "clip";
@@ -56,7 +57,7 @@ async function findSlot(workspace: string) {
   const match = workspaces.find((item) => item.slug === workspace);
   if (match) return match.slot;
   if (errors.length) {
-    await showError(errors[0], "Could not play");
+    await showError(errors[0].error, "Could not play");
     return undefined;
   }
   await showToast({
@@ -75,11 +76,13 @@ export function useQuicklinkPlay(kind: Kind, props: LaunchProps) {
   const context = props.launchContext as QuicklinkContext | undefined;
   const slug = typeof context?.slug === "string" ? context.slug : "";
   const workspace = typeof context?.workspace === "string" ? context.workspace : "";
-  const [isPlaying, setIsPlaying] = useState(Boolean(slug));
+  // without a workspace it plays in the active one; when that key is unusable, the list's key view says so, no toast
+  const skip = !workspace && keyState(activeSlot()) !== "ok";
+  const [isPlaying, setIsPlaying] = useState(Boolean(slug) && !skip);
   const started = useRef(false);
 
   useEffect(() => {
-    if (!slug || started.current) return;
+    if (!slug || skip || started.current) return;
     started.current = true;
     (async () => {
       const slot = workspace ? await findSlot(workspace) : undefined;

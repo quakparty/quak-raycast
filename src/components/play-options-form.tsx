@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { EffectsResponse, Speaker, Voice } from "@quak/js";
 import { loadDefaults, resetDefaults, saveDefaults } from "../lib/defaults";
 import { showError } from "../lib/errors";
+import { noteKeyError } from "../lib/key-state";
 import { formatSeconds } from "../lib/format";
 import { quak } from "../lib/quak";
 import { activeSlot, configuredSlots } from "../lib/slots";
@@ -127,15 +128,20 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   const preview = usePreview();
   const isPreviewing = preview === PREVIEW_KEY;
 
+  // a toast here; a rejected key also switches the lists behind the form to their key view
+  const failed = (error: Error, title: string) => {
+    noteKeyError(slot, error);
+    return showError(error, title);
+  };
   const speakers = useCachedPromise(async (slot: number) => (await quak(slot).speakers.list()).data, [slot], {
-    onError: (error) => showError(error, "Could not load the speakers"),
+    onError: (error) => failed(error, "Could not load the speakers"),
   });
   const effects = useCachedPromise(async (slot: number) => (await quak(slot).effects.list()).data, [slot], {
-    onError: (error) => showError(error, "Could not load the effects"),
+    onError: (error) => failed(error, "Could not load the effects"),
   });
   const voices = useCachedPromise(async (slot: number) => (await quak(slot).voices.list()).data, [slot], {
     execute: isText,
-    onError: (error) => showError(error, "Could not load the voices"),
+    onError: (error) => failed(error, "Could not load the voices"),
   });
 
   // The own defaults: what the fields start from (fixed once loaded, empty after a reset) and what is saved now.

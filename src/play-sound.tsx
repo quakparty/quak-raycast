@@ -2,6 +2,7 @@ import { Action, ActionPanel, Icon, LaunchProps, List } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
+import { KeyProblem } from "./components/key-problem";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { PreviewAction } from "./components/preview-action";
 import { CreateQuicklinkAction, useQuicklinkPlay } from "./components/quicklink-action";
@@ -10,6 +11,7 @@ import { TargetsSection } from "./components/targets-section";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
 import { formatSeconds } from "./lib/format";
+import { type KeyedSlot, useKey, useWipe } from "./lib/key-state";
 import { playWithDefaults } from "./lib/play";
 import { usePreview } from "./lib/preview";
 import { useTargets } from "./lib/targets";
@@ -30,17 +32,25 @@ export default function Command(props: LaunchProps) {
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState(ALL_TAGS);
 
-  const tags = useCachedPromise(async () => (await quak().sounds.tags()).data, [], {
-    // only the tag filter; the sound list itself reports a failure
-    onError: () => undefined,
-  });
-  const sounds = useCachedPromise(
-    async (q: string, tag: string) =>
-      (await quak().sounds.list({ q: q.trim() || undefined, tags: tag === ALL_TAGS ? undefined : tag })).data,
-    [search, tag],
-    { keepPreviousData: true, onError: (error) => showError(error, "Could not load sounds") },
+  const key = useKey(choice.slot);
+  // only the tag filter; the sound list itself reports a failure
+  const tags = useCachedPromise(
+    async ({ slot }: KeyedSlot) => (await quak(slot).sounds.tags()).data,
+    [key.arg],
+    key.options(),
   );
+  const sounds = useCachedPromise(
+    async ({ slot }: KeyedSlot, q: string, tag: string) =>
+      (await quak(slot).sounds.list({ q: q.trim() || undefined, tags: tag === ALL_TAGS ? undefined : tag })).data,
+    [key.arg, search, tag],
+    { keepPreviousData: true, ...key.options((error) => showError(error, "Could not load sounds")) },
+  );
+  useWipe(key.state, tags);
+  useWipe(key.state, sounds);
   const tagNames = new Map(tags.data?.map((item) => [item.tag, item.name]));
+
+  // a missing or rejected key: only what to do about it, nothing cached
+  if (key.state !== "ok") return <KeyProblem state={key.state} choice={choice} />;
 
   return (
     <List

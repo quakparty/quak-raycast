@@ -51,6 +51,10 @@ computer (Raycast's local storage), never with your key.
 Create an API key with scope `play` (or `create` to also save plays as clips) in [Settings → API keys](https://quak.party/app/settings/keys) on quak.party and paste it into the extension's
 preferences.
 
+When the active workspace's key is missing, isn't a Quak key or is no longer accepted (deleted, or without scope
+`play`), the commands show nothing cached, only the steps to get a key: Enter opens the preferences, ⌘O the key page.
+With more than one key, `Switch Workspace` stays there. Talk to Speakers doesn't record then.
+
 Each key belongs to one workspace. For a second or third workspace, add its key as **Second Workspace** or **Third
 Workspace**. Play Text, Play Sound, Play Clip and History then have `Switch Workspace` in their actions (⌘⇧W, Ctrl+Shift+W
 on Windows), also with an empty list, and show the active workspace in the search bar's placeholder. The choice applies

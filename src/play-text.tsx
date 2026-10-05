@@ -1,10 +1,12 @@
 import { Action, ActionPanel, Color, Icon, Keyboard, LaunchProps, List, showToast, Toast } from "@raycast/api";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { KeyProblem } from "./components/key-problem";
 import { PlayOptionsForm } from "./components/play-options-form";
 import { previewKey, PreviewAction } from "./components/preview-action";
 import { StopAction } from "./components/stop-action";
 import { ExtensionActions, useWorkspace } from "./components/switch-workspace-action";
 import { useDefaults } from "./lib/defaults";
+import { useKey } from "./lib/key-state";
 import { useLimits } from "./lib/limits";
 import { playWithDefaults } from "./lib/play";
 import { usePreview } from "./lib/preview";
@@ -30,9 +32,11 @@ const ORDER: Record<RowAction, RowAction[]> = {
 export default function Command(props: LaunchProps<{ arguments: Arguments.PlayText }>) {
   const initial = (props.arguments.text || props.fallbackText || "").trim();
   const [text, setText] = useState(initial);
-  const [isPlaying, setIsPlaying] = useState(Boolean(initial));
-  const started = useRef(false);
   const choice = useWorkspace();
+  const key = useKey(choice.slot);
+  // with an unusable key the key view says what to do; no play and no toast on top
+  const [isPlaying, setIsPlaying] = useState(Boolean(initial) && key.ok);
+  const started = useRef(false);
   const maxCharacters = useLimits(choice.slot).textCharacters;
   // own defaults for texts: Enter's title says so
   const defaults = useDefaults("text", choice.slot);
@@ -42,7 +46,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const recent = useRecentTexts(choice.slot);
 
   useEffect(() => {
-    if (!initial || started.current) return;
+    if (!initial || !key.ok || started.current) return;
     started.current = true;
     // on success the HUD closes Raycast, on an error the text stays for another try
     playWithDefaults({ kind: "text", text: initial }, "hud").finally(() => setIsPlaying(false));
@@ -117,6 +121,9 @@ export default function Command(props: LaunchProps<{ arguments: Arguments.PlayTe
   const search = trimmed.toLowerCase();
   const recentTexts = (recent.data ?? []).filter((item) => !search || item.text.toLowerCase().includes(search));
   const previewing = Boolean(trimmed) && preview === previewKey({ kind: "text", text: trimmed });
+
+  // a missing or rejected key: only what to do about it, nothing cached
+  if (key.state !== "ok") return <KeyProblem state={key.state} choice={choice} />;
 
   return (
     <List

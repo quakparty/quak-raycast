@@ -15,3 +15,4 @@
 - Low credits: below 20 the message after a play says how many are left; "Out of credits" when they run out.
 - `Open Quak in Browser` in every list's actions.
 - Up to three workspaces, one key each: switch with `Switch Workspace` (⌘⇧W) in any list's actions; quicklinks play where they were made.
+- A missing, malformed or rejected API key: the commands show the steps to get one instead of cached lists.

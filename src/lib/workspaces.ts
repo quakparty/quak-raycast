@@ -1,7 +1,6 @@
 import { Cache } from "@raycast/api";
-import { createHash } from "crypto";
 import { quak } from "./quak";
-import { configuredSlots, keyField } from "./slots";
+import { configuredSlots, keyHash } from "./slots";
 
 // A configured key's workspace; slug is missing when the lookup failed
 export type Workspace = { slot: number; name: string; slug?: string };
@@ -9,10 +8,6 @@ export type Workspace = { slot: number; name: string; slug?: string };
 // The last lookup per slot, tied to a hash of its key (never the key), so a changed key asks again
 const cache = new Cache({ namespace: "workspace" });
 type Cached = { key: string; name: string; slug: string };
-
-function keyHash(slot: number) {
-  return createHash("sha256").update(keyField(slot)).digest("hex").slice(0, 16);
-}
 
 // The cached workspace of a slot, read synchronously; undefined before the first lookup or after a key change
 export function cachedWorkspace(slot: number): { name: string; slug: string } | undefined {
@@ -22,6 +17,11 @@ export function cachedWorkspace(slot: number): { name: string; slug: string } | 
   } catch {
     return undefined;
   }
+}
+
+// Forgets a slot's workspace after its key was rejected, so its name doesn't linger
+export function forgetWorkspace(slot: number) {
+  cache.remove(`name:${slot}`);
 }
 
 // The workspace of one key (GET /v1/keys/current, works with any scope). The only place that asks.
@@ -56,13 +56,13 @@ export async function workspaceSuffix(slot: number) {
 // The workspaces of all configured keys; a failed lookup keeps the slot with its fallback name
 export async function listWorkspaces(
   slots = configuredSlots(),
-): Promise<{ workspaces: Workspace[]; errors: unknown[] }> {
+): Promise<{ workspaces: Workspace[]; errors: { slot: number; error: unknown }[] }> {
   const results = await Promise.allSettled(slots.map((slot) => lookupWorkspace(slot)));
-  const errors: unknown[] = [];
+  const errors: { slot: number; error: unknown }[] = [];
   const workspaces = results.map((result, index): Workspace => {
     const slot = slots[index];
     if (result.status === "fulfilled") return { slot, ...result.value };
-    errors.push(result.reason);
+    errors.push({ slot, error: result.reason });
     return { slot, name: slotName(slot) };
   });
   return { workspaces, errors };

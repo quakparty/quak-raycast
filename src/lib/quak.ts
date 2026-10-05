@@ -4,7 +4,7 @@ import { KeyFormatError } from "./errors";
 import { activeSlot, keyField, keyFieldTitle } from "./slots";
 
 // Quak keys look like qk_key_…; anything else is a typo or pasted text, caught before a request
-const KEY_PREFIX = "qk_key_";
+export const KEY_PREFIX = "qk_key_";
 
 // The key of a slot (the active workspace by default), checked for its format
 export function apiKey(slot = activeSlot()) {
