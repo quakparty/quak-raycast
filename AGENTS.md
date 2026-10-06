@@ -23,5 +23,7 @@ Raycast extension "Quak for Sonos" for [Quak](https://quak.party), published thr
 - **Product decisions:** few commands; no browser fallbacks for features; credits show up only after a play below 20 (`LOW_CREDITS` in
   `src/lib/play.ts`) and as "Out of credits" when they run out; workspace defaults apply unless the user saved own defaults per command in the options form;
   limits, `canReplay` and `canSave` come from the API, never hardcoded.
+- **Quicklinks** only for sounds and clips (persistent data): a fixed text becomes a clip first (Save as Clip), Talk has
+  none. They run the no-view command `play` in the background, so Raycast doesn't open.
 - **Keys** live only in the preferences (up to three, one per workspace), never in links, logs or LocalStorage.
 - Commits: `<scope>: <action>`, English, small steps.
