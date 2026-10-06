@@ -42,7 +42,7 @@ export function CreateQuicklinkAction({
       quicklink={{
         name: workspace?.slug ? `Play ${name} (${workspace.name})` : `Play ${name}`,
         link,
-        icon: kind === "sound" ? Icon.Music : Icon.Waveform,
+        icon: Icon.Play,
       }}
     />
   );
