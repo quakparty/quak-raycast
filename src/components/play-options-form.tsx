@@ -254,7 +254,13 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   return (
     <Form
       // only fields to answer; what plays sits in the title (allowed in a pushed screen)
-      navigationTitle={source.kind === "text" ? "Play with Options" : `${described.title}: ${described.text}`}
+      navigationTitle={
+        source.kind === "sound" || source.kind === "clip"
+          ? `${described.title}: “${described.text}”`
+          : source.kind === "text"
+            ? "Play with Options"
+            : `${described.title}: ${described.text}`
+      }
       isLoading={initial.isLoading || speakers.isLoading || effects.isLoading || (isText && voices.isLoading)}
       actions={
         <ActionPanel>
