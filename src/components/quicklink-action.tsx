@@ -22,10 +22,10 @@ type Kind = "sound" | "clip";
 // What a quicklink passes to its command: the slug and, with more than one key, the workspace's slug; never the key
 type QuicklinkContext = { kind?: unknown; slug?: unknown; workspace?: unknown };
 
-// Quicklinks run Play Selected Text, the extension's command without a window, in the background: Raycast stays closed
+// Quicklinks run the command "play" (Play Selected Text, id kept neutral for the link), the one without a window, in the background: Raycast stays closed
 // and only the HUD shows. A view command (Play Sound, Play Clip) would open the window first. Older quicklinks to
 // play-sound / play-clip still work through useQuicklinkPlay.
-const QUICKLINK_COMMAND = "play-selected-text";
+const QUICKLINK_COMMAND = "play";
 
 export const QUICKLINK_SHORTCUT: Keyboard.Shortcut = {
   macOS: { modifiers: ["cmd", "shift"], key: "l" },

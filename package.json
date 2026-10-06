@@ -40,7 +40,7 @@
       ]
     },
     {
-      "name": "play-selected-text",
+      "name": "play",
       "title": "Play Selected Text",
       "subtitle": "Quak",
       "description": "Play the text selected in any app on your speakers.",
