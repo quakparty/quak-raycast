@@ -20,7 +20,8 @@ Raycast extension for [Quak](https://quak.party): announcements, sounds and clip
   "Let desktop apps access your microphone" must be on in Settings → Privacy & security → Microphone; without it
   Windows records silence, and Talk says so.
 - **Play Sound**: search the sound library by name, description or tag and play a sound. `Create Sound Quicklink` (⌘⇧L)
-  saves a quicklink that plays this sound right away with your defaults (see below); give it an alias or a hotkey.
+  saves a quicklink that plays this sound right away with your defaults (see below), in the background without opening
+  Raycast; give it an alias or a hotkey.
 - **Play Clip**: play one of your workspace's clips. `Create Clip Quicklink` (⌘⇧L) works like in Play Sound.
 - **Stop Announcements**: stop everything that plays on all speakers of your workspace.
 - **History**: recent plays with type, content, speakers, status, time and client. Replay a play, stop it while it

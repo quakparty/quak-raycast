@@ -1,4 +1,14 @@
-import { Action, Icon, Keyboard, LaunchProps, openExtensionPreferences, showToast, Toast } from "@raycast/api";
+import {
+  Action,
+  Icon,
+  Keyboard,
+  LaunchProps,
+  LaunchType,
+  openExtensionPreferences,
+  showHUD,
+  showToast,
+  Toast,
+} from "@raycast/api";
 import { createDeeplink } from "@raycast/utils";
 import { useEffect, useRef, useState } from "react";
 import { showError } from "../lib/errors";
@@ -10,9 +20,12 @@ import { cachedWorkspace, listWorkspaces, type Workspace } from "../lib/workspac
 type Kind = "sound" | "clip";
 
 // What a quicklink passes to its command: the slug and, with more than one key, the workspace's slug; never the key
-type QuicklinkContext = { slug?: unknown; workspace?: unknown };
+type QuicklinkContext = { kind?: unknown; slug?: unknown; workspace?: unknown };
 
-const COMMANDS: Record<Kind, string> = { sound: "play-sound", clip: "play-clip" };
+// Quicklinks run Play Selected Text, the extension's command without a window, in the background: Raycast stays closed
+// and only the HUD shows. A view command (Play Sound, Play Clip) would open the window first. Older quicklinks to
+// play-sound / play-clip still work through useQuicklinkPlay.
+const QUICKLINK_COMMAND = "play-selected-text";
 
 export const QUICKLINK_SHORTCUT: Keyboard.Shortcut = {
   macOS: { modifiers: ["cmd", "shift"], key: "l" },
@@ -32,8 +45,8 @@ export function CreateQuicklinkAction({
   name: string;
   workspace?: Workspace;
 }) {
-  const context = workspace?.slug ? { slug, workspace: workspace.slug } : { slug };
-  const link = createDeeplink({ command: COMMANDS[kind], context });
+  const context = workspace?.slug ? { kind, slug, workspace: workspace.slug } : { kind, slug };
+  const link = createDeeplink({ command: QUICKLINK_COMMAND, context, launchType: LaunchType.Background });
   return (
     <Action.CreateQuicklink
       title={`Create ${kind === "sound" ? "Sound" : "Clip"} Quicklink`}
@@ -92,4 +105,25 @@ export function useQuicklinkPlay(kind: Kind, props: LaunchProps) {
   }, []);
 
   return isPlaying;
+}
+
+// The quicklink's sound or clip from a launch context, or undefined when the launch isn't from a quicklink
+export function quicklinkTarget(launchContext: unknown) {
+  const context = launchContext as QuicklinkContext | undefined;
+  const kind: Kind | undefined = context?.kind === "sound" || context?.kind === "clip" ? context.kind : undefined;
+  const slug = typeof context?.slug === "string" ? context.slug : "";
+  if (!kind || !slug) return undefined;
+  return { kind, slug, workspace: typeof context?.workspace === "string" ? context.workspace : "" };
+}
+
+// Plays a quicklink's sound or clip without a window (Play Selected Text in the background): HUD on success, a toast on
+// errors, a HUD pointing to the preferences when the key is unusable
+export async function playQuicklink(target: { kind: Kind; slug: string; workspace: string }) {
+  const slot = target.workspace ? await findSlot(target.workspace) : activeSlot();
+  if (slot === undefined) return;
+  if (keyState(slot) !== "ok") {
+    await showHUD("Quak: add a valid API key in the extension preferences");
+    return;
+  }
+  await playWithDefaults({ kind: target.kind, slug: target.slug, name: target.slug }, "hud", slot);
 }
