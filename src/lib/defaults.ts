@@ -1,6 +1,7 @@
 import { LocalStorage } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import type { PlayOptions, PlaySource } from "./play";
+import { isVolume } from "./volume";
 import { cachedWorkspace } from "./workspaces";
 
 // The extension's own defaults: one set per play type and workspace slot, saved from the options form. They fill in
@@ -14,11 +15,12 @@ function storageKey(kind: DefaultsKind, slot: number) {
   return `defaults:${kind}:${slot}`;
 }
 
-// Only the fields that are set; an empty set is no set
+// Only the fields that are set; an empty set is no set. A volume the API no longer takes (saved when 1 to 9 still
+// worked) falls back to the workspace's.
 function clean(options: PlayOptions): PlayOptions {
   const result: PlayOptions = {};
   if (options.to?.length) result.to = options.to;
-  if (options.volume !== undefined) result.volume = options.volume;
+  if (options.volume !== undefined && isVolume(options.volume)) result.volume = options.volume;
   if (options.voice) result.voice = options.voice;
   if (options.effect) result.effect = options.effect;
   if (options.ambience) result.ambience = options.ambience;

@@ -11,6 +11,7 @@ import { activeSlot, configuredSlots } from "../lib/slots";
 import { cachedWorkspace, slotName } from "../lib/workspaces";
 import { playWithFeedback, PlaySource, PlayOptions } from "../lib/play";
 import { startPreview, togglePreview, usePreview } from "../lib/preview";
+import { isVolume, MAX_VOLUME, MIN_VOLUME } from "../lib/volume";
 import { PREVIEW_SHORTCUT } from "./preview-action";
 
 // The shortcuts of "Save as Your Defaults" (Common.Save) and "Reset to Workspace Defaults" (Common.Remove), for the
@@ -51,7 +52,7 @@ function parseVolume(raw: string): number | undefined | null {
   const value = raw.trim();
   if (!value) return undefined;
   const volume = Number(value);
-  return Number.isInteger(volume) && volume >= 1 && volume <= 100 ? volume : null;
+  return isVolume(volume) ? volume : null;
 }
 
 // The form previews one thing at a time, whatever its fields say now
@@ -169,7 +170,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
     }
     const volume = parseVolume(values.volume);
     if (volume === null) {
-      setVolumeError("1 to 100, or empty");
+      setVolumeError(`${MIN_VOLUME} to ${MAX_VOLUME}, or empty`);
       return null;
     }
     const pick = (value: string | undefined) => (value && value !== DEFAULT ? value : undefined);
@@ -333,7 +334,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
           id="volume"
           title="Volume"
           placeholder="Workspace default"
-          info={`${saved?.volume !== undefined ? `Your default: ${saved.volume}. ` : ""}1 to 100, empty: the workspace's default volume`}
+          info={`${saved?.volume !== undefined ? `Your default: ${saved.volume}. ` : ""}${MIN_VOLUME} to ${MAX_VOLUME}, empty: the workspace's default volume. ${MIN_VOLUME} is the quietest Sonos plays an announcement.`}
           defaultValue={remember ? undefined : preset?.volume !== undefined ? String(preset.volume) : ""}
           error={volumeError}
           onChange={() => setVolumeError(undefined)}
