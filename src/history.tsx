@@ -1,7 +1,7 @@
 import { Action, ActionPanel, Color, Icon, Keyboard, List, showToast, Toast } from "@raycast/api";
 import { showError } from "./lib/errors";
 import { useCachedPromise } from "@raycast/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Play } from "@quak/js";
 import { KeyProblem } from "./components/key-problem";
 import { SaveClipForm } from "./components/save-clip-form";
@@ -14,6 +14,11 @@ import { quak } from "./lib/quak";
 import { useLivePlays } from "./lib/watch";
 
 const PAGE_SIZE = 30;
+
+const WHOLE_WORKSPACE_SHORTCUT: Keyboard.Shortcut = {
+  macOS: { modifiers: ["cmd", "shift"], key: "a" },
+  Windows: { modifiers: ["ctrl", "shift"], key: "a" },
+};
 
 const TYPE_NAMES: Record<Play["type"], string> = {
   TEXT: "Text",
@@ -80,10 +85,11 @@ function nameOf(names: Record<string, string> | undefined, slug: string) {
   return names && Object.hasOwn(names, slug) ? names[slug] : undefined;
 }
 
-// Recent plays of the workspace with their details
+// Recent plays of the extension's key with their details, or of the whole workspace
 export default function Command() {
   const choice = useWorkspace();
   const key = useKey(choice.slot);
+  const [all, setAll] = useState(false);
   // the history names sounds and clips by slug, the lists give their names; plain objects, because the cache stores
   // JSON and a Map would come back empty
   const names = useCachedPromise(
@@ -100,12 +106,16 @@ export default function Command() {
   );
 
   const plays = useCachedPromise(
-    ({ slot }: KeyedSlot) =>
+    ({ slot }: KeyedSlot, all: boolean) =>
       async ({ page }: { page: number }) => {
-        const { data, meta } = await quak(slot).plays.list({ limit: PAGE_SIZE, offset: page * PAGE_SIZE });
+        const { data, meta } = await quak(slot).plays.list({
+          limit: PAGE_SIZE,
+          offset: page * PAGE_SIZE,
+          keys: all ? "all" : "current",
+        });
         return { data, hasMore: meta.offset + meta.count < meta.total };
       },
-    [key.arg],
+    [key.arg, all],
     { keepPreviousData: true, ...key.options((error) => showError(error, "Could not load the history")) },
   );
   useWipe(key.state, names);
@@ -113,13 +123,18 @@ export default function Command() {
 
   // changes arrive live over the API's WebSocket; while it is down, reload every 2 s as long as a play is running
   const live = useLivePlays(choice.slot, key.ok);
+  // the watch sends every play of the workspace and doesn't say which key made it: with only the own key, a new play
+  // reloads the list, which filters
   const listed = new Set(plays.data?.map((play) => play.id));
+  const unlisted = Object.values(live.plays).filter((play) => !listed.has(play.id));
   const shown = [
-    ...Object.values(live.plays)
-      .filter((play) => !listed.has(play.id))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    ...(all ? unlisted.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []),
     ...(plays.data?.map((play) => live.plays[play.id] ?? play) ?? []),
   ];
+  const unlistedIds = unlisted.map((play) => play.id).join();
+  useEffect(() => {
+    if (!all && unlistedIds && !plays.isLoading) plays.revalidate();
+  }, [all, unlistedIds]);
   const busy = shown.some((play) => play.status === "PENDING" || play.status === "ACTIVE");
   useEffect(() => {
     if (!key.ok || live.connected || !busy || plays.isLoading) return;
@@ -259,7 +274,13 @@ export default function Command() {
       isLoading={plays.isLoading}
       isShowingDetail
       pagination={plays.pagination}
-      searchBarPlaceholder={choice.multiple ? `Filter plays in ${choice.active.name}` : "Filter plays"}
+      searchBarPlaceholder={
+        all
+          ? choice.multiple
+            ? `Filter plays in ${choice.active.name}`
+            : "Filter plays in the workspace"
+          : "Filter plays of this key"
+      }
     >
       {shown.map((play) => (
         <List.Item
@@ -294,6 +315,7 @@ export default function Command() {
                 />
               )}
               <StopAction shortcut={STOP_ALL_SHORTCUT} />
+              <ScopeAction all={all} onChange={setAll} />
               <Action
                 title="Refresh History"
                 icon={Icon.ArrowClockwise}
@@ -308,14 +330,27 @@ export default function Command() {
       {!plays.isLoading && (
         <List.EmptyView
           icon={Icon.Clock}
-          title="No plays yet"
+          title={all ? "No plays yet" : "No plays with this key yet"}
+          description={all ? undefined : "Plays from other keys and apps are in the whole workspace"}
           actions={
             <ActionPanel>
+              <ScopeAction all={all} onChange={setAll} />
               <ExtensionActions choice={choice} />
             </ActionPanel>
           }
         />
       )}
     </List>
+  );
+}
+
+function ScopeAction({ all, onChange }: { all: boolean; onChange: (all: boolean) => void }) {
+  return (
+    <Action
+      title={all ? "Show Only This Key" : "Show Whole Workspace"}
+      icon={all ? Icon.Key : Icon.House}
+      shortcut={WHOLE_WORKSPACE_SHORTCUT}
+      onAction={() => onChange(!all)}
+    />
   );
 }
