@@ -122,19 +122,14 @@ export default function Command() {
   useWipe(key.state, plays);
 
   // changes arrive live over the API's WebSocket; while it is down, reload every 2 s as long as a play is running
-  const live = useLivePlays(choice.slot, key.ok);
-  // the watch sends every play of the workspace and doesn't say which key made it: with only the own key, a new play
-  // reloads the list, which filters
+  const live = useLivePlays(choice.slot, key.ok, all);
   const listed = new Set(plays.data?.map((play) => play.id));
-  const unlisted = Object.values(live.plays).filter((play) => !listed.has(play.id));
   const shown = [
-    ...(all ? unlisted.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []),
+    ...Object.values(live.plays)
+      .filter((play) => !listed.has(play.id))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     ...(plays.data?.map((play) => live.plays[play.id] ?? play) ?? []),
   ];
-  const unlistedIds = unlisted.map((play) => play.id).join();
-  useEffect(() => {
-    if (!all && unlistedIds && !plays.isLoading) plays.revalidate();
-  }, [all, unlistedIds]);
   const busy = shown.some((play) => play.status === "PENDING" || play.status === "ACTIVE");
   useEffect(() => {
     if (!key.ok || live.connected || !busy || plays.isLoading) return;

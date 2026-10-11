@@ -4,8 +4,9 @@ import { quak } from "./quak";
 
 // Every change of a play as it happens, from the API's WebSocket; `connected` tells when to fall back to polling.
 // A new slot (another workspace) starts over with its own connection. The client reconnects by itself, but not after
-// a rejected key. Not connected while the key is known to be unusable (enabled false).
-export function useLivePlays(slot: number, enabled = true) {
+// a rejected key. Not connected while the key is known to be unusable (enabled false). all: the whole workspace, else
+// only the plays of the slot's key.
+export function useLivePlays(slot: number, enabled = true, all = true) {
   const [plays, setPlays] = useState<Record<string, Play>>({});
   const [connected, setConnected] = useState(false);
 
@@ -16,6 +17,7 @@ export function useLivePlays(slot: number, enabled = true) {
     let watch: Watch;
     try {
       watch = quak(slot).watch({
+        keys: all ? "all" : "current",
         onReady: () => setConnected(true),
         onPlay: (play) => setPlays((current) => ({ ...current, [play.id]: play })),
         onClose: () => setConnected(false),
@@ -26,7 +28,7 @@ export function useLivePlays(slot: number, enabled = true) {
       return; // a malformed key; the list itself reports it
     }
     return () => watch.close();
-  }, [slot, enabled]);
+  }, [slot, enabled, all]);
 
   return { plays, connected };
 }
