@@ -3,7 +3,7 @@ import { readFile } from "fs/promises";
 import { loadDefaults } from "./defaults";
 import { showError } from "./errors";
 import { noteKeyError } from "./key-state";
-import type { Play, PlayTextParams } from "@quak/js";
+import { QuakError, type Play, type PlayTextParams } from "@quak/js";
 import { quak } from "./quak";
 import { activeSlot } from "./slots";
 import { workspaceSuffix } from "./workspaces";
@@ -151,12 +151,28 @@ export function playWithFeedback(source: PlaySource, options: PlayOptions, feedb
   return withFeedback(() => sendPlay(source, options, slot), feedback, undefined, slot);
 }
 
+// A saved effect or ambience the plan no longer has is left out, as the API does with the workspace's defaults
+async function sendWithDefaults(source: PlaySource, options: PlayOptions, slot: number): Promise<Played> {
+  try {
+    return await sendPlay(source, options, slot);
+  } catch (error) {
+    const lost =
+      error instanceof QuakError &&
+      error.code === "ERROR_PLAN_REQUIRED" &&
+      (error.field === "effect" || error.field === "ambience")
+        ? error.field
+        : undefined;
+    if (!lost || !options[lost]) throw error;
+    return sendWithDefaults(source, { ...options, [lost]: undefined }, slot);
+  }
+}
+
 // A plain play (Enter, quicklinks, Play Selected Text): the extension's defaults for this type and workspace, the
 // workspace's for everything they leave out
 export function playWithDefaults(source: PlaySource, feedback: Feedback, slot?: number) {
   const target = slot ?? activeSlot();
   return withFeedback(
-    async () => sendPlay(source, (await loadDefaults(source.kind, target)) ?? {}, target),
+    async () => sendWithDefaults(source, (await loadDefaults(source.kind, target)) ?? {}, target),
     feedback,
     undefined,
     target,

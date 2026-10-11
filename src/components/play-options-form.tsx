@@ -32,6 +32,13 @@ type Values = {
   ambience: string;
 };
 
+type Effect = EffectsResponse["data"][number];
+
+const LOCKED_PLANS = [
+  { plan: "home", title: "With the Home Plan" },
+  { plan: "family", title: "With the Family Plan" },
+] as const;
+
 const SPEAKER_ICONS: Record<Speaker["type"], Icon> = {
   WORKSPACE: Icon.House,
   LOCATION: Icon.House,
@@ -242,6 +249,37 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   const described = describeSource(source);
   const effectList = effects.data?.filter((effect) => effect.kind === "effect");
   const ambienceList = effects.data?.filter((effect) => effect.kind === "ambience");
+  // the plan's own first; the others locked, by the plan that has them (picking one plays into ERROR_PLAN_REQUIRED)
+  const byPlan = (list: Effect[], field: "effect" | "ambience") => (
+    <>
+      {list
+        .filter((effect) => effect.available)
+        .map((effect) => (
+          <Form.Dropdown.Item
+            key={effect.id}
+            value={effect.id}
+            title={`${effect.name}${mine(saved?.[field], effect.id)}`}
+            keywords={[effect.id]}
+          />
+        ))}
+      {LOCKED_PLANS.map(({ plan, title }) => {
+        const locked = list.filter((effect) => !effect.available && effect.plan === plan);
+        return locked.length ? (
+          <Form.Dropdown.Section key={plan} title={title}>
+            {locked.map((effect) => (
+              <Form.Dropdown.Item
+                key={effect.id}
+                value={effect.id}
+                title={effect.name}
+                icon={Icon.Lock}
+                keywords={[effect.id]}
+              />
+            ))}
+          </Form.Dropdown.Section>
+        ) : null;
+      })}
+    </>
+  );
   // the fields render once the own defaults are known, so they start from the right values
   const ready = !initial.isLoading;
   // a field's start: the own default, or nothing (storeValue brings the last value, or the workspace's default)
@@ -375,14 +413,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
         >
           <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
           <Form.Dropdown.Item value="none" title={`None${mine(saved?.effect, "none")}`} />
-          {effectList.map((effect) => (
-            <Form.Dropdown.Item
-              key={effect.id}
-              value={effect.id}
-              title={`${effect.name}${mine(saved?.effect, effect.id)}`}
-              keywords={[effect.id]}
-            />
-          ))}
+          {byPlan(effectList, "effect")}
         </Form.Dropdown>
       )}
       {ready && ambienceList && (
@@ -395,14 +426,7 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
         >
           <Form.Dropdown.Item value={DEFAULT} title="Workspace default" />
           <Form.Dropdown.Item value="none" title={`None${mine(saved?.ambience, "none")}`} />
-          {ambienceList.map((ambience) => (
-            <Form.Dropdown.Item
-              key={ambience.id}
-              value={ambience.id}
-              title={`${ambience.name}${mine(saved?.ambience, ambience.id)}`}
-              keywords={[ambience.id]}
-            />
-          ))}
+          {byPlan(ambienceList, "ambience")}
         </Form.Dropdown>
       )}
       {ready && (
