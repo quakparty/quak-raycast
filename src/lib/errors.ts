@@ -5,6 +5,8 @@ import { QuakError } from "@quak/js";
 // Where people make an API key (Raycast cannot show links on its preferences screen)
 export const KEYS_URL = "https://quak.party/app/settings/keys";
 
+export const PRICING_URL = "https://quak.party/pricing";
+
 // The key in the preferences does not look like a Quak key; field names the preference for the second and third key
 export class KeyFormatError extends Error {
   constructor(field?: string) {
@@ -32,6 +34,16 @@ export async function showError(error: unknown, title: string) {
   // 402: the workspace ran out of credits; the toast carries the API's message
   if (error instanceof QuakError && error.status === 402 && error.code === "ERROR_INSUFFICIENT_CREDITS") {
     await showToast({ style: Toast.Style.Failure, title: "Out of credits", message: error.message });
+    return;
+  }
+  // 403: an effect or ambience the plan lacks; the API names the plan in its message
+  if (error instanceof QuakError && error.status === 403 && error.code === "ERROR_PLAN_REQUIRED") {
+    await showToast({
+      style: Toast.Style.Failure,
+      title,
+      message: error.message,
+      primaryAction: { title: "View Plans", onAction: () => open(PRICING_URL) },
+    });
     return;
   }
   await showFailureToast(error, { title });
