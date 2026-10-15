@@ -51,7 +51,7 @@ export default function Command(props: LaunchProps) {
               title={clip.name}
               keywords={[clip.slug]}
               accessories={[
-                { text: formatSeconds(clip.length) },
+                { text: formatSeconds(clip.seconds) },
                 { date: new Date(clip.createdAt), tooltip: "Created" },
               ]}
               actions={

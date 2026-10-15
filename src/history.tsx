@@ -113,7 +113,7 @@ export default function Command() {
           offset: page * PAGE_SIZE,
           keys: all ? "all" : "current",
         });
-        return { data, hasMore: meta.offset + meta.count < meta.total };
+        return { data, hasMore: meta.offset + data.length < meta.total };
       },
     [key.arg, all],
     { keepPreviousData: true, ...key.options((error) => showError(error, "Could not load the history")) },
@@ -251,8 +251,8 @@ export default function Command() {
             {param(play, "voice") && <List.Item.Detail.Metadata.Label title="Voice" text={param(play, "voice")} />}
             {effect && effect !== "none" && <List.Item.Detail.Metadata.Label title="Voice Effect" text={effect} />}
             {ambience && ambience !== "none" && <List.Item.Detail.Metadata.Label title="Ambience" text={ambience} />}
-            {play.length !== null && (
-              <List.Item.Detail.Metadata.Label title="Length" text={formatSeconds(play.length)} />
+            {play.seconds !== null && (
+              <List.Item.Detail.Metadata.Label title="Length" text={formatSeconds(play.seconds)} />
             )}
             {play.params.replayOf !== undefined && <List.Item.Detail.Metadata.Label title="Replay" text="Yes" />}
           </List.Item.Detail.Metadata>

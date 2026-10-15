@@ -78,7 +78,7 @@ export default function Command(props: LaunchProps) {
               subtitle={sound.description ?? undefined}
               accessories={[
                 ...sound.tags.map((value) => ({ tag: tagNames.get(value) ?? value })),
-                { text: formatSeconds(sound.length) },
+                { text: formatSeconds(sound.seconds) },
               ]}
               actions={
                 <ActionPanel>
