@@ -147,10 +147,14 @@ export function PlayOptionsForm({ source, onDefaultsChange }: { source: PlaySour
   const effects = useCachedPromise(async (slot: number) => (await quak(slot).effects.list()).data, [slot], {
     onError: (error) => failed(error, "Could not load the effects"),
   });
-  const voices = useCachedPromise(async (slot: number) => (await quak(slot).voices.list({ limit: 5000 })).data, [slot], {
-    execute: isText,
-    onError: (error) => failed(error, "Could not load the voices"),
-  });
+  const voices = useCachedPromise(
+    async (slot: number) => (await quak(slot).voices.list({ limit: 5000 })).data,
+    [slot],
+    {
+      execute: isText,
+      onError: (error) => failed(error, "Could not load the voices"),
+    },
+  );
 
   // The own defaults: what the fields start from (fixed once loaded, empty after a reset) and what is saved now.
   // Without a saved set the fields remember their last values instead (storeValue), so the two never mix.
